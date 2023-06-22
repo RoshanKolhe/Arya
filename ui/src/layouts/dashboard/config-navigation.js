@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 // routes
 import { paths } from 'src/routes/paths';
 // components
+import { useLocales } from 'src/locales';
 import SvgColor from 'src/components/svg-color';
 
 // ----------------------------------------------------------------------
@@ -44,6 +45,9 @@ const ICONS = {
 // ----------------------------------------------------------------------
 
 export function useNavData() {
+
+  const { t } = useLocales();
+
   const data = useMemo(
     () => [
       // OVERVIEW
@@ -68,10 +72,22 @@ export function useNavData() {
               { title: 'six', path: paths.dashboard.group.six },
             ],
           },
+          // PRODUCT
+          {
+            title: t('product'),
+            path: paths.dashboard.product.root,
+            icon: ICONS.product,
+            children: [
+              { title: t('list'), path: paths.dashboard.product.root },
+              { title: t('details'), path: paths.dashboard.product.demo.details },
+              { title: t('create'), path: paths.dashboard.product.new },
+              { title: t('edit'), path: paths.dashboard.product.demo.edit },
+            ],
+          },
         ],
       },
     ],
-    []
+    [t]
   );
 
   return data;

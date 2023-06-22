@@ -4,13 +4,12 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
-// hooks
-import { useMockedUser } from 'src/hooks/use-mocked-user';
 // _mock
 import { _appFeatured, _appAuthors, _appInstalled, _appRelated, _appInvoices } from 'src/_mock';
 // components
 // assets
 import { useSettingsContext } from 'src/components/settings';
+import { useAuthContext } from 'src/auth/hooks';
 import { SeoIllustration } from '../../../../assets/illustrations';
 //
 import AppWidget from '../app-widget';
@@ -26,7 +25,7 @@ import AppTopInstalledCountries from '../app-top-installed-countries';
 // ----------------------------------------------------------------------
 
 export default function OverviewAppView() {
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
 
   const theme = useTheme();
 
@@ -47,8 +46,6 @@ export default function OverviewAppView() {
             }
           />
         </Grid>
-
-       
 
         <Grid xs={12} md={4}>
           <AppWidgetSummary

@@ -51,6 +51,7 @@
     "!*/__tests__"
   ],
   "dependencies": {
+    "@loopback/authentication": "^9.0.2",
     "@loopback/boot": "^5.0.7",
     "@loopback/core": "^4.0.7",
     "@loopback/repository": "^5.1.5",
@@ -59,6 +60,7 @@
     "@loopback/service-proxy": "^5.0.7",
     "bcryptjs": "^2.4.3",
     "isemail": "^3.2.0",
+    "jsonwebtoken": "^8.5.1",
     "loopback-connector-mysql": "^5.4.4",
     "tslib": "^2.0.0"
   },
@@ -67,6 +69,7 @@
     "@loopback/eslint-config": "^13.0.7",
     "@loopback/testlab": "^5.0.7",
     "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/lodash": "^4.14.195",
     "@types/node": "^14.18.36",
     "eslint": "^8.30.0",

@@ -9,6 +9,14 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import {BcryptHasher} from './services/hash.password.bcrypt';
+import {JWTService} from './services/jwt-service';
+import {
+  AuthenticationComponent,
+  registerAuthenticationStrategy,
+} from '@loopback/authentication';
+import {JWTStrategy} from './authentication-strategy/jwt-strategy';
+import {MyUserService} from './services/user-service';
 
 export {ApplicationConfig};
 
@@ -20,6 +28,12 @@ export class AryabackendApplication extends BootMixin(
 
     // Set up the custom sequence
     this.sequence(MySequence);
+
+    //set up bindings
+    this.setUpBinding();
+
+    this.component(AuthenticationComponent);
+    registerAuthenticationStrategy(this, JWTStrategy);
 
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));
@@ -40,5 +54,11 @@ export class AryabackendApplication extends BootMixin(
         nested: true,
       },
     };
+  }
+
+  setUpBinding(): void {
+    this.bind('service.hasher').toClass(BcryptHasher);
+    this.bind('service.jwt.service').toClass(JWTService);
+    this.bind('service.user.service').toClass(MyUserService);
   }
 }

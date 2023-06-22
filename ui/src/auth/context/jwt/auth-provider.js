@@ -57,13 +57,13 @@ export function AuthProvider({ children }) {
   const initialize = useCallback(async () => {
     try {
       const accessToken = sessionStorage.getItem(STORAGE_KEY);
-
+      console.log(isValidToken(accessToken));
       if (accessToken && isValidToken(accessToken)) {
         setSession(accessToken);
 
         const response = await axios.get(endpoints.auth.me);
 
-        const { user } = response.data;
+        const user  = response.data;
 
         dispatch({
           type: 'INITIAL',
