@@ -18,11 +18,11 @@ import MotionLazy from 'src/components/animate/motion-lazy';
 import { SettingsProvider, SettingsDrawer } from 'src/components/settings';
 // auth
 import { AuthProvider, AuthConsumer } from 'src/auth/context/jwt';
+import { SnackbarProvider } from './components/snackbar';
 
 // ----------------------------------------------------------------------
 
 export default function App() {
-
   useScrollToTop();
 
   return (
@@ -39,11 +39,13 @@ export default function App() {
       >
         <ThemeProvider>
           <MotionLazy>
-            <SettingsDrawer />
-            <ProgressBar />
-            <AuthConsumer>
-              <Router />
-            </AuthConsumer>
+            <SnackbarProvider>
+              <SettingsDrawer />
+              <ProgressBar />
+              <AuthConsumer>
+                <Router />
+              </AuthConsumer>
+            </SnackbarProvider>
           </MotionLazy>
         </ThemeProvider>
       </SettingsProvider>

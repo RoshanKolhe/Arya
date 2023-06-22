@@ -50,4 +50,9 @@ export const endpoints = {
     details: '/api/product/details',
     search: '/api/product/search',
   },
+  category: {
+    list: '/api/category/list',
+    details: '/api/category/details',
+    search: '/api/category/search',
+  }
 };

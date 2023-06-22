@@ -76,7 +76,7 @@ export function useNavData() {
           {
             title: t('category'),
             path: paths.dashboard.category.root,
-            icon: ICONS.category,
+            icon: ICONS.blog,
             children: [
               { title: t('list'), path: paths.dashboard.category.root },
               { title: t('create'), path: paths.dashboard.category.new },
