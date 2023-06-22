@@ -62,16 +62,6 @@ export function useNavData() {
       {
         subheader: 'management',
         items: [
-          {
-            title: 'user',
-            path: paths.dashboard.group.root,
-            icon: ICONS.user,
-            children: [
-              { title: 'four', path: paths.dashboard.group.root },
-              { title: 'five', path: paths.dashboard.group.five },
-              { title: 'six', path: paths.dashboard.group.six },
-            ],
-          },
           // PRODUCT
           {
             title: t('product'),
@@ -79,9 +69,17 @@ export function useNavData() {
             icon: ICONS.product,
             children: [
               { title: t('list'), path: paths.dashboard.product.root },
-              { title: t('details'), path: paths.dashboard.product.demo.details },
               { title: t('create'), path: paths.dashboard.product.new },
-              { title: t('edit'), path: paths.dashboard.product.demo.edit },
+            ],
+          },
+          // CATEGORY
+          {
+            title: t('category'),
+            path: paths.dashboard.category.root,
+            icon: ICONS.category,
+            children: [
+              { title: t('list'), path: paths.dashboard.category.root },
+              { title: t('create'), path: paths.dashboard.category.new },
             ],
           },
         ],
