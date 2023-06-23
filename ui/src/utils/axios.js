@@ -55,4 +55,9 @@ export const endpoints = {
     details: (id) => `/api/categories/${id}`,
     search: '/api/category/search',
   },
+  brand: {
+    list: '/api/brands/list',
+    details: (id) => `/api/brands/${id}`,
+    search: '/api/brands/search',
+  },
 };

@@ -36,28 +36,27 @@ import Scrollbar from 'src/components/scrollbar';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
-import { useGetCategories } from 'src/api/category';
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
-import CategoryTableRow from '../category-table-row';
-import CategoryTableToolbar from '../category-table-toolbar';
-import CategoryTableFiltersResult from '../category-table-filters-result';
+import { useGetBrands } from 'src/api/brand';
+import BrandTableRow from '../brand-table-row';
+import BrandTableToolbar from '../brand-table-toolbar';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'categoryName', label: 'Category' },
+  { id: 'brandName', label: 'Brand' },
   { id: 'createdAt', label: 'Create at', width: 160 },
   { id: '', width: 88 },
 ];
 
 const defaultFilters = {
-  categoryName: '',
+  brandName: '',
 };
 
 // ----------------------------------------------------------------------
 
-export default function CategoryListView() {
+export default function BrandListView() {
   const router = useRouter();
 
   const table = useTable();
@@ -70,15 +69,15 @@ export default function CategoryListView() {
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const { categories, categoriesLoading, categoriesEmpty, refreshCategories } = useGetCategories();
+  const { brands, brandsLoading, brandsEmpty, refreshBrands } = useGetBrands();
 
   const confirm = useBoolean();
 
   useEffect(() => {
-    if (categories.length) {
-      setTableData(categories);
+    if (brands.length) {
+      setTableData(brands);
     }
-  }, [categories]);
+  }, [brands]);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -95,7 +94,7 @@ export default function CategoryListView() {
 
   const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = (!dataFiltered.length && canReset) || categoriesEmpty;
+  const notFound = (!dataFiltered.length && canReset) || brandsEmpty;
 
   const handleFilters = useCallback(
     (name, value) => {
@@ -111,10 +110,10 @@ export default function CategoryListView() {
   const handleDeleteRow = useCallback(
     async (id, deleteConfirm) => {
       await axiosInstance
-        .delete(`/api/categories/${id}`)
+        .delete(`/api/brands/${id}`)
         .then((res) => {
           enqueueSnackbar('Delete Success!');
-          refreshCategories();
+          refreshBrands();
         })
         .catch((err) => {
           console.error(err);
@@ -127,7 +126,7 @@ export default function CategoryListView() {
         });
       deleteConfirm.onFalse();
     },
-    [enqueueSnackbar, refreshCategories]
+    [enqueueSnackbar, refreshBrands]
   );
 
   const handleDeleteRows = useCallback(() => {
@@ -143,7 +142,7 @@ export default function CategoryListView() {
 
   const handleEditRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.category.edit(id));
+      router.push(paths.dashboard.brand.edit(id));
     },
     [router]
   );
@@ -156,26 +155,26 @@ export default function CategoryListView() {
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
             {
-              name: 'Category',
-              href: paths.dashboard.category.root,
+              name: 'Brand',
+              href: paths.dashboard.brand.root,
             },
             { name: 'List' },
           ]}
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.category.new}
+              href={paths.dashboard.brand.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New Category
+              New Brand
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
         <Card>
-          <CategoryTableToolbar filters={filters} onFilters={handleFilters} />
+          <BrandTableToolbar filters={filters} onFilters={handleFilters} />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <TableSelectedAction
               dense={table.dense}
@@ -214,7 +213,7 @@ export default function CategoryListView() {
                 />
 
                 <TableBody>
-                  {categoriesLoading ? (
+                  {brandsLoading ? (
                     [...Array(table.rowsPerPage)].map((i, index) => (
                       <TableSkeleton key={index} sx={{ height: denseHeight }} />
                     ))
@@ -226,7 +225,7 @@ export default function CategoryListView() {
                           table.page * table.rowsPerPage + table.rowsPerPage
                         )
                         .map((row) => (
-                          <CategoryTableRow
+                          <BrandTableRow
                             key={row.id}
                             row={row}
                             selected={table.selected.includes(row.id)}
@@ -291,7 +290,7 @@ export default function CategoryListView() {
 // ----------------------------------------------------------------------
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { categoryName } = filters;
+  const { brandName } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -303,9 +302,9 @@ function applyFilter({ inputData, comparator, filters }) {
 
   inputData = stabilizedThis.map((el) => el[0]);
 
-  if (categoryName) {
+  if (brandName) {
     inputData = inputData.filter(
-      (category) => category.categoryName.toLowerCase().indexOf(categoryName.toLowerCase()) !== -1
+      (brand) => brand.brandName.toLowerCase().indexOf(brandName.toLowerCase()) !== -1
     );
   }
   return inputData;

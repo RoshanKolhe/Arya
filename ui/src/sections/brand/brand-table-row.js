@@ -25,14 +25,14 @@ import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-export default function CategoryTableRow({
+export default function BrandTableRow({
   row,
   selected,
   onSelectRow,
   onDeleteRow,
   onEditRow,
 }) {
-  const { categoryName, createdAt, available, inventoryType } =
+  const { brandName, createdAt, available, inventoryType } =
     row;
 
   const confirm = useBoolean();
@@ -47,7 +47,7 @@ export default function CategoryTableRow({
         </TableCell>
 
         <TableCell>
-          <Typography variant="subtitle">{categoryName}</Typography>
+          <Typography variant="subtitle">{brandName}</Typography>
         </TableCell>
 
         <TableCell>
@@ -113,7 +113,7 @@ export default function CategoryTableRow({
   );
 }
 
-CategoryTableRow.propTypes = {
+BrandTableRow.propTypes = {
   onDeleteRow: PropTypes.func,
   onEditRow: PropTypes.func,
   onSelectRow: PropTypes.func,

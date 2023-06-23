@@ -45,7 +45,6 @@ const ICONS = {
 // ----------------------------------------------------------------------
 
 export function useNavData() {
-
   const { t } = useLocales();
 
   const data = useMemo(
@@ -62,16 +61,6 @@ export function useNavData() {
       {
         subheader: 'management',
         items: [
-          // PRODUCT
-          {
-            title: t('product'),
-            path: paths.dashboard.product.root,
-            icon: ICONS.product,
-            children: [
-              { title: t('list'), path: paths.dashboard.product.root },
-              { title: t('create'), path: paths.dashboard.product.new },
-            ],
-          },
           // CATEGORY
           {
             title: t('category'),
@@ -80,6 +69,27 @@ export function useNavData() {
             children: [
               { title: t('list'), path: paths.dashboard.category.root },
               { title: t('create'), path: paths.dashboard.category.new },
+            ],
+          },
+
+          // BRAND
+          {
+            title: t('brands'),
+            path: paths.dashboard.brand.root,
+            icon: ICONS.job,
+            children: [
+              { title: t('list'), path: paths.dashboard.brand.root },
+              { title: t('create'), path: paths.dashboard.brand.new },
+            ],
+          },
+          // PRODUCT
+          {
+            title: t('product'),
+            path: paths.dashboard.product.root,
+            icon: ICONS.product,
+            children: [
+              { title: t('list'), path: paths.dashboard.product.root },
+              { title: t('create'), path: paths.dashboard.product.new },
             ],
           },
         ],

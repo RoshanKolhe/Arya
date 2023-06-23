@@ -28,5 +28,10 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/category/new`,
       edit: (id) => `${ROOTS.DASHBOARD}/category/${id}/edit`,
     },
+    brand: {
+      root: `${ROOTS.DASHBOARD}/brand`,
+      new: `${ROOTS.DASHBOARD}/brand/new`,
+      edit: (id) => `${ROOTS.DASHBOARD}/brand/${id}/edit`,
+    },
   },
 };

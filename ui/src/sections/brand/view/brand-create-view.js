@@ -6,34 +6,34 @@ import { paths } from 'src/routes/paths';
 import { useSettingsContext } from 'src/components/settings';
 //
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs/custom-breadcrumbs';
-import CategoryNewEditForm from '../category-new-edit-form';
+import BrandNewEditForm from '../brand-new-edit-form';
 
 // ----------------------------------------------------------------------
 
-export default function CategoryCreateView() {
+export default function BrandCreateView() {
   const settings = useSettingsContext();
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
-        heading="Create a new product"
+        heading="Create a new brand"
         links={[
           {
             name: 'Dashboard',
             href: paths.dashboard.root,
           },
           {
-            name: 'Category',
-            href: paths.dashboard.category.root,
+            name: 'Brand',
+            href: paths.dashboard.brand.root,
           },
-          { name: 'New Category' },
+          { name: 'New Brand' },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <CategoryNewEditForm />
+      <BrandNewEditForm />
     </Container>
   );
 }

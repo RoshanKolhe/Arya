@@ -6,7 +6,10 @@ export async function migrate(args: string[]) {
 
   const app = new AryabackendApplication();
   await app.boot();
-  await app.migrateSchema({existingSchema, models: ['User','Category']});
+  await app.migrateSchema({
+    existingSchema,
+    models: ['User', 'Category', 'Brand','Product'],
+  });
 
   // Connectors usually keep a pool of opened connections,
   // this keeps the process running even after all work is done.

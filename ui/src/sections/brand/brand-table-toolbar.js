@@ -17,12 +17,12 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-export default function CategoryTableToolbar({ filters, onFilters }) {
+export default function BrandTableToolbar({ filters, onFilters }) {
   const popover = usePopover();
 
   const handleFilterName = useCallback(
     (event) => {
-      onFilters('categoryName', event.target.value);
+      onFilters('brandName', event.target.value);
     },
     [onFilters]
   );
@@ -99,7 +99,7 @@ export default function CategoryTableToolbar({ filters, onFilters }) {
   );
 }
 
-CategoryTableToolbar.propTypes = {
+BrandTableToolbar.propTypes = {
   filters: PropTypes.object,
   onFilters: PropTypes.func,
 };

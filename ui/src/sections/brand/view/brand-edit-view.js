@@ -9,19 +9,19 @@ import { useGetProduct } from 'src/api/product';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
-import { useGetCategory } from 'src/api/category';
-import CategoryNewEditForm from '../category-new-edit-form';
+import { useGetBrand } from 'src/api/brand';
+import BrandNewEditForm from '../brand-new-edit-form';
 
 // ----------------------------------------------------------------------
 
-export default function CategoryEditView() {
+export default function BrandEditView() {
   const settings = useSettingsContext();
 
   const params = useParams();
 
   const { id } = params;
 
-  const { category: currentCategory } = useGetCategory(`${id}`);
+  const { brand: currentBrand } = useGetBrand(`${id}`);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -30,17 +30,17 @@ export default function CategoryEditView() {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           {
-            name: 'Category',
-            href: paths.dashboard.category.root,
+            name: 'Brand',
+            href: paths.dashboard.brand.root,
           },
-          { name: currentCategory?.categoryName },
+          { name: currentBrand?.categoryName },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <CategoryNewEditForm currentCategory={currentCategory} />
+      <BrandNewEditForm currentBrand={currentBrand} />
     </Container>
   );
 }

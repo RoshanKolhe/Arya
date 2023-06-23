@@ -6,39 +6,39 @@ import { fetcher, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
-export function useGetCategories() {
-  const URL = endpoints.category.list;
+export function useGetBrands() {
+  const URL = endpoints.brand.list;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
 
-  const refreshCategories = () => {
+  const refreshBrands = () => {
     // Use the `mutate` function to trigger a revalidation
     mutate();
   };
 
   return {
-    categories: data || [],
-    categoriesLoading: isLoading,
-    categoriesError: error,
-    categoriesValidating: isValidating,
-    categoriesEmpty: !isLoading && !data?.length,
-    refreshCategories, // Include the refresh function separately
+    brands: data || [],
+    brandsLoading: isLoading,
+    brandsError: error,
+    brandsValidating: isValidating,
+    brandsEmpty: !isLoading && !data?.length,
+    refreshBrands, // Include the refresh function separately
   };
 }
 
 // ----------------------------------------------------------------------
 
-export function useGetCategory(categoryId) {
-  const URL = categoryId ? [endpoints.category.details(categoryId)] : null;
+export function useGetBrand(brandId) {
+  const URL = brandId ? [endpoints.brand.details(brandId)] : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
-      category: data,
-      categoryLoading: isLoading,
-      categoryError: error,
-      categoryValidating: isValidating,
+      brand: data,
+      brandLoading: isLoading,
+      brandError: error,
+      brandValidating: isValidating,
     }),
     [data, error, isLoading, isValidating]
   );
