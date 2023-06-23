@@ -19,6 +19,7 @@ const ProductEditPage = lazy(() => import('src/pages/dashboard/product/edit'));
 // Category
 const CategoryListPage = lazy(() => import('src/pages/dashboard/category/list'));
 const CategoryCreatePage = lazy(() => import('src/pages/dashboard/category/new'));
+const CategoryEditPage = lazy(() => import('src/pages/dashboard/category/edit'));
 
 // ----------------------------------------------------------------------
 
@@ -52,6 +53,7 @@ export const dashboardRoutes = [
           { element: <CategoryListPage />, index: true },
           { path: 'list', element: <CategoryListPage /> },
           { path: 'new', element: <CategoryCreatePage /> },
+          { path: ':id/edit', element: <CategoryEditPage /> },
         ],
       },
     ],

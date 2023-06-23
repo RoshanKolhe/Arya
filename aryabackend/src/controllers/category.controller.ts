@@ -101,7 +101,7 @@ export class CategoryController {
   }
 
   @authenticate('jwt')
-  @get('/categories/{id}')
+  @get('/api/categories/{id}')
   @response(200, {
     description: 'Category model instance',
     content: {
@@ -118,7 +118,7 @@ export class CategoryController {
   }
 
   @authenticate('jwt')
-  @patch('/categories/{id}')
+  @patch('/api/categories/{id}')
   @response(204, {
     description: 'Category PATCH success',
   })
@@ -149,7 +149,7 @@ export class CategoryController {
   }
 
   @authenticate('jwt')
-  @del('/categories/{id}')
+  @del('/api/categories/{id}')
   @response(204, {
     description: 'Category DELETE success',
   })

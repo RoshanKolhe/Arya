@@ -9,26 +9,27 @@ import { fetcher, endpoints } from 'src/utils/axios';
 export function useGetCategories() {
   const URL = endpoints.category.list;
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
 
-  const memoizedValue = useMemo(
-    () => ({
-      categories: data || [],
-      categoriesLoading: isLoading,
-      categoriesError: error,
-      categoriesValidating: isValidating,
-      categoriesEmpty: !isLoading && !data?.length,
-    }),
-    [data, error, isLoading, isValidating]
-  );
+  const refreshCategories = () => {
+    // Use the `mutate` function to trigger a revalidation
+    mutate();
+  };
 
-  return memoizedValue;
+  return {
+    categories: data || [],
+    categoriesLoading: isLoading,
+    categoriesError: error,
+    categoriesValidating: isValidating,
+    categoriesEmpty: !isLoading && !data?.length,
+    refreshCategories, // Include the refresh function separately
+  };
 }
 
 // ----------------------------------------------------------------------
 
 export function useGetCategory(categoryId) {
-  const URL = categoryId ? [endpoints.category.details, { params: { categoryId } }] : null;
+  const URL = categoryId ? [endpoints.category.details(categoryId)] : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 

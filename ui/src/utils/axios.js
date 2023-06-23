@@ -52,7 +52,7 @@ export const endpoints = {
   },
   category: {
     list: '/api/category/list',
-    details: '/api/category/details',
+    details: (id) => `/api/categories/${id}`,
     search: '/api/category/search',
-  }
+  },
 };
