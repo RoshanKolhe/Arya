@@ -1,4 +1,6 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Variation} from './variation.model';
+import {ProductVariation} from './product-variation.model';
 
 @model()
 export class Product extends Entity {
@@ -36,6 +38,8 @@ export class Product extends Entity {
   })
   updatedAt?: Date;
 
+  @hasMany(() => Variation, {through: {model: () => ProductVariation}})
+  variations: Variation[];
 
   constructor(data?: Partial<Product>) {
     super(data);
