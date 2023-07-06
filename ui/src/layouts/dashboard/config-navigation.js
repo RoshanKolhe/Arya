@@ -62,26 +62,26 @@ export function useNavData() {
         subheader: 'management',
         items: [
           // CATEGORY
-          {
-            title: t('category'),
-            path: paths.dashboard.category.root,
-            icon: ICONS.blog,
-            children: [
-              { title: t('list'), path: paths.dashboard.category.root },
-              { title: t('create'), path: paths.dashboard.category.new },
-            ],
-          },
+          // {
+          //   title: t('category'),
+          //   path: paths.dashboard.category.root,
+          //   icon: ICONS.blog,
+          //   children: [
+          //     { title: t('list'), path: paths.dashboard.category.root },
+          //     { title: t('create'), path: paths.dashboard.category.new },
+          //   ],
+          // },
 
           // BRAND
-          {
-            title: t('brands'),
-            path: paths.dashboard.brand.root,
-            icon: ICONS.job,
-            children: [
-              { title: t('list'), path: paths.dashboard.brand.root },
-              { title: t('create'), path: paths.dashboard.brand.new },
-            ],
-          },
+          // {
+          //   title: t('brands'),
+          //   path: paths.dashboard.brand.root,
+          //   icon: ICONS.job,
+          //   children: [
+          //     { title: t('list'), path: paths.dashboard.brand.root },
+          //     { title: t('create'), path: paths.dashboard.brand.new },
+          //   ],
+          // },
           // PRODUCT
           {
             title: t('product'),
@@ -89,7 +89,7 @@ export function useNavData() {
             icon: ICONS.product,
             children: [
               { title: t('list'), path: paths.dashboard.product.root },
-              { title: t('create'), path: paths.dashboard.product.new },
+              // { title: t('create'), path: paths.dashboard.product.new },
             ],
           },
         ],

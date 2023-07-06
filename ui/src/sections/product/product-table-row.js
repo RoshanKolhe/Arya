@@ -21,6 +21,7 @@ import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -32,17 +33,7 @@ export default function ProductTableRow({
   onEditRow,
   onViewRow,
 }) {
-  const {
-    name,
-    price,
-    publish,
-    coverUrl,
-    category,
-    quantity,
-    createdAt,
-    available,
-    inventoryType,
-  } = row;
+  const { name, opening_rate, uom, opening_value, parent, quantity, available, inventoryType } = row;
 
   const confirm = useBoolean();
 
@@ -56,13 +47,6 @@ export default function ProductTableRow({
         </TableCell>
 
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar
-            alt={name}
-            src={coverUrl}
-            variant="rounded"
-            sx={{ width: 64, height: 64, mr: 2 }}
-          />
-
           <ListItemText
             disableTypography
             primary={
@@ -78,52 +62,27 @@ export default function ProductTableRow({
             }
             secondary={
               <Box component="div" sx={{ typography: 'body2', color: 'text.disabled' }}>
-                {category}
+                {parent}
               </Box>
             }
           />
         </TableCell>
 
         <TableCell>
-          <ListItemText
-            primary={format(new Date(createdAt), 'dd MMM yyyy')}
-            secondary={format(new Date(createdAt), 'p')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
-          />
+          <Typography variant="subtitle">{uom}</Typography>
         </TableCell>
-
-        <TableCell sx={{ typography: 'caption', color: 'text.secondary' }}>
-          <LinearProgress
-            value={(available * 100) / quantity}
-            variant="determinate"
-            color={
-              (inventoryType === 'out of stock' && 'error') ||
-              (inventoryType === 'low stock' && 'warning') ||
-              'success'
-            }
-            sx={{ mb: 1, height: 6, maxWidth: 80 }}
-          />
-          {!!available && available} {inventoryType}
-        </TableCell>
-
-        <TableCell>{fCurrency(price)}</TableCell>
-
         <TableCell>
-          <Label variant="soft" color={(publish === 'published' && 'info') || 'default'}>
-            {publish}
-          </Label>
+          <Typography variant="subtitle">{opening_rate}</Typography>
+        </TableCell>
+        <TableCell>
+          <Typography variant="subtitle">{opening_value}</Typography>
         </TableCell>
 
-        <TableCell align="right">
+        {/* <TableCell align="right">
           <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
 
       <CustomPopover

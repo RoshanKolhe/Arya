@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {
   Count,
   CountSchema,
   DefaultTransactionalRepository,
+  Filter,
   IsolationLevel,
   repository,
   Where,
@@ -17,14 +19,12 @@ import {
   response,
   HttpErrors,
 } from '@loopback/rest';
-import {Product, ProductVariation} from '../models';
-import {
-  ProductRepository,
-  ProductVariationRepository,
-  VariationRepository,
-} from '../repositories';
+import {Product} from '../models';
+import {ProductRepository} from '../repositories';
 import {inject} from '@loopback/core';
 import {AryaDataSource} from '../datasources';
+import {TallyHttpCallService} from '../services/tally-http-call';
+import {STOCK_ITEM_XML} from '../helpers/getProductsTallyXml';
 
 export class ProductController {
   constructor(
@@ -32,10 +32,8 @@ export class ProductController {
     public dataSource: AryaDataSource,
     @repository(ProductRepository)
     public productRepository: ProductRepository,
-    @repository(VariationRepository)
-    private variationRepository: VariationRepository,
-    @repository(ProductVariationRepository)
-    private productVariationRepository: ProductVariationRepository,
+    @inject('service.tally.service')
+    public tallyPostService: TallyHttpCallService,
   ) {}
 
   @post('/api/products')
@@ -45,49 +43,44 @@ export class ProductController {
   })
   async create(
     @requestBody() requestData: {product: Product; variations: any[]},
-  ): Promise<Product> {
-    const repo = new DefaultTransactionalRepository(Product, this.dataSource);
-    const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
-
-    try {
-      const {product, variations} = requestData;
-
-      const createdProduct = await this.productRepository.create(product, {
-        transaction: tx,
-      });
-
-      for (const variation of variations) {
-        let existingVariation = await this.variationRepository.findOne({
-          where: {name: variation.name},
-        });
-
-        if (!existingVariation) {
-          const inputVariation = {
-            name: variation.name,
-          };
-          existingVariation = await this.variationRepository.create(
-            inputVariation,
-          );
-        }
-        const productVariation = new ProductVariation({
-          productId: createdProduct.id,
-          variationId: existingVariation.id,
-          mrp: variation.mrp,
-          sellingPrice: variation.sellingPrice,
-          sku: variation.sku,
-          stock: variation.stock,
-        });
-
-        await this.productVariationRepository.create(productVariation, {
-          transaction: tx,
-        });
-      }
-      await tx.commit();
-      return createdProduct;
-    } catch (err) {
-      await tx.rollback();
-      throw err;
-    }
+  ): Promise<any> {
+    // const repo = new DefaultTransactionalRepository(Product, this.dataSource);
+    // const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
+    // try {
+    //   const {product, variations} = requestData;
+    //   const createdProduct = await this.productRepository.create(product, {
+    //     transaction: tx,
+    //   });
+    //   for (const variation of variations) {
+    //     let existingVariation = await this.variationRepository.findOne({
+    //       where: {name: variation.name},
+    //     });
+    //     if (!existingVariation) {
+    //       const inputVariation = {
+    //         name: variation.name,
+    //       };
+    //       existingVariation = await this.variationRepository.create(
+    //         inputVariation,
+    //       );
+    //     }
+    //     const productVariation = new ProductVariation({
+    //       productId: createdProduct.id,
+    //       variationId: existingVariation.id,
+    //       mrp: variation.mrp,
+    //       sellingPrice: variation.sellingPrice,
+    //       sku: variation.sku,
+    //       stock: variation.stock,
+    //     });
+    //     await this.productVariationRepository.create(productVariation, {
+    //       transaction: tx,
+    //     });
+    //   }
+    //   await tx.commit();
+    //   return createdProduct;
+    // } catch (err) {
+    //   await tx.rollback();
+    //   throw err;
+    // }
   }
 
   @get('/api/products/count')
@@ -99,59 +92,70 @@ export class ProductController {
     return this.productRepository.count(where);
   }
 
-  @get('/api/products')
-  @response(200, {
-    description: 'Array of Product model instances',
-    content: {
-      'application/json': {
-        schema: {type: 'array', items: getModelSchemaRef(Product)},
-      },
-    },
-  })
-  async find(): Promise<any[]> {
-    const products = await this.productRepository.find();
+  @post('/api/products/sync')
+  async syncProducts(): Promise<any> {
+    try {
+      const tallyXml = STOCK_ITEM_XML();
+      const res: any = await this.tallyPostService.postTallyXML(tallyXml);
+      const parsedXmlData = await this.tallyPostService.parseXmlToObjects(res);
+      const repo = new DefaultTransactionalRepository(Product, this.dataSource);
+      const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
 
-    // Retrieve variations for each product using the junction table
-    const productsWithVariations = await Promise.all(
-      products.map(async product => {
-        const productVariations = await this.productRepository
-          .variations(product.id)
-          .find();
+      try {
+        await this.productRepository.deleteAll(undefined, {
+          transaction: tx,
+        });
 
-        const updatedVariationsWithJunctionData = await Promise.all(
-          productVariations.map(async res => {
-            const variationData = await this.productVariationRepository.findOne(
-              {
-                where: {
-                  productId: product.id,
-                  variationId: res.id,
-                },
-              },
-            );
+        const finalMappedObject: Product[] = parsedXmlData.map(
+          (product: any) => {
+            const mappedProduct: Product = new Product();
+            mappedProduct.guid = product.GUID;
+            mappedProduct.alterid = product.ALTERID;
+            mappedProduct.name = product.NAME;
+            mappedProduct.parent = product.PARENT || ' ';
+            mappedProduct._parent = product._PARENT || ' ';
+            mappedProduct.alias = product.ALIAS || null;
+            mappedProduct.uom = product.UOM;
+            mappedProduct._uom = product._UOM || ' ';
+            mappedProduct.opening_balance = product.OPENINGBALANCE || 0;
+            mappedProduct.opening_rate = product.OPENINGRATE || 0;
+            mappedProduct.opening_value = product.OPENINGVALUE || 0;
+            mappedProduct.gst_nature_of_goods = product.NATUREOFGOODS || null;
+            mappedProduct.gst_hsn_code = product.HSNCODE || null;
+            mappedProduct.gst_taxability = product.TAXABILITY || null;
 
-            if (variationData) {
-              return {
-                name: res.name,
-                id: res.id,
-                ...variationData,
-              };
-            } else {
-              return {
-                name: res.name,
-                id: res.id,
-              };
-            }
-          }),
+            return mappedProduct;
+          },
         );
 
-        return {
-          ...product,
-          productVariations: updatedVariationsWithJunctionData,
-        };
-      }),
-    );
+        await this.productRepository.createAll(finalMappedObject, {
+          transaction: tx,
+        });
 
-    return productsWithVariations;
+        await tx.commit();
+
+        // Return success response
+        return {
+          success: true,
+          message: 'Sync successful',
+        };
+      } catch (err) {
+        await tx.rollback();
+        throw new Error(
+          'Error synchronizing products. Transaction rolled back.',
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new Error('Error synchronizing products.');
+    }
+  }
+
+  @get('/api/products/list')
+  async find(
+    @param.filter(Product) filter?: Filter<Product>,
+  ): Promise<Product[]> {
+    return this.productRepository.find(filter);
   }
 
   @get('/api/products/{id}')
@@ -166,35 +170,35 @@ export class ProductController {
     }
 
     // Retrieve variations using the junction table
-    const productVariations = await this.productRepository
-      .variations(id)
-      .find();
+    // const productVariations = await this.productRepository
+    //   .variations(id)
+    //   .find();
 
-    // Map the variations to the product object
-    const updatedVariationsWithJunctionData = await Promise.all(
-      productVariations.map(async res => {
-        const variationData = await this.productVariationRepository.findOne({
-          where: {
-            productId: id,
-            variationId: res.id,
-          },
-        });
-        if (variationData) {
-          return {
-            name: res.name,
-            id: res.id,
-            ...variationData,
-          };
-        } else {
-          return {
-            name: res.name,
-            id: res.id,
-          };
-        }
-      }),
-    );
+    // // Map the variations to the product object
+    // const updatedVariationsWithJunctionData = await Promise.all(
+    //   productVariations.map(async res => {
+    //     const variationData = await this.productVariationRepository.findOne({
+    //       where: {
+    //         productId: id,
+    //         variationId: res.id,
+    //       },
+    //     });
+    //     if (variationData) {
+    //       return {
+    //         name: res.name,
+    //         id: res.id,
+    //         ...variationData,
+    //       };
+    //     } else {
+    //       return {
+    //         name: res.name,
+    //         id: res.id,
+    //       };
+    //     }
+    //   }),
+    // );
 
-    return {...product, productVariations: updatedVariationsWithJunctionData};
+    return product;
   }
 
   @patch('/api/products/{id}')
@@ -205,56 +209,50 @@ export class ProductController {
     @param.path.number('id') id: number,
     @requestBody() requestData: {product: Product; variations: any[]},
   ): Promise<any> {
-    const repo = new DefaultTransactionalRepository(Product, this.dataSource);
-    const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
-
-    try {
-      const {product, variations} = requestData;
-
-      await this.productRepository.updateById(id, product, {transaction: tx});
-
-      // Delete previous variations that are not included in the updated variations
-      await this.productVariationRepository.deleteAll(
-        {productId: id},
-        {transaction: tx},
-      );
-
-      for (const variation of variations) {
-        let existingVariation = await this.variationRepository.findOne({
-          where: {name: variation.name},
-        });
-
-        if (!existingVariation) {
-          const inputVariation = {
-            name: variation.name,
-          };
-          existingVariation = await this.variationRepository.create(
-            inputVariation,
-            {transaction: tx},
-          );
-        }
-
-        const productVariation = new ProductVariation({
-          productId: id,
-          variationId: existingVariation.id,
-          mrp: variation.mrp,
-          sellingPrice: variation.sellingPrice,
-          sku: variation.sku,
-          stock: variation.stock,
-        });
-        await this.productVariationRepository.create(productVariation, {
-          transaction: tx,
-        });
-      }
-      await tx.commit();
-      return await Promise.resolve({
-        success: true,
-        message: 'Product updated successfully',
-      });
-    } catch (err) {
-      await tx.rollback();
-      throw err;
-    }
+    // const repo = new DefaultTransactionalRepository(Product, this.dataSource);
+    // const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
+    // try {
+    //   const {product, variations} = requestData;
+    //   await this.productRepository.updateById(id, product, {transaction: tx});
+    //   // Delete previous variations that are not included in the updated variations
+    //   await this.productVariationRepository.deleteAll(
+    //     {productId: id},
+    //     {transaction: tx},
+    //   );
+    //   for (const variation of variations) {
+    //     let existingVariation = await this.variationRepository.findOne({
+    //       where: {name: variation.name},
+    //     });
+    //     if (!existingVariation) {
+    //       const inputVariation = {
+    //         name: variation.name,
+    //       };
+    //       existingVariation = await this.variationRepository.create(
+    //         inputVariation,
+    //         {transaction: tx},
+    //       );
+    //     }
+    //     const productVariation = new ProductVariation({
+    //       productId: id,
+    //       variationId: existingVariation.id,
+    //       mrp: variation.mrp,
+    //       sellingPrice: variation.sellingPrice,
+    //       sku: variation.sku,
+    //       stock: variation.stock,
+    //     });
+    //     await this.productVariationRepository.create(productVariation, {
+    //       transaction: tx,
+    //     });
+    //   }
+    //   await tx.commit();
+    //   return await Promise.resolve({
+    //     success: true,
+    //     message: 'Product updated successfully',
+    //   });
+    // } catch (err) {
+    //   await tx.rollback();
+    //   throw err;
+    // }
   }
 
   @del('/api/products/{id}')

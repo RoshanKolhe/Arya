@@ -1,6 +1,5 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
-import {Variation} from './variation.model';
-import {ProductVariation} from './product-variation.model';
+/* eslint-disable @typescript-eslint/naming-convention */
+import {Entity, model, property} from '@loopback/repository';
 
 @model()
 export class Product extends Entity {
@@ -15,19 +14,95 @@ export class Product extends Entity {
     type: 'string',
     required: true,
   })
+  guid: string;
+
+  @property({
+    type: 'string',
+    required: true,
+    default: '',
+  })
+  alterid: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
   name: string;
 
   @property({
     type: 'string',
-  })
-  shortDescription?: string;
-
-  @property({
-    type: 'boolean',
     required: true,
   })
-  status: boolean;
+  parent: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  _parent: string;
+
+  @property({
+    type: 'string',
+  })
+  alias?: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  uom: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  _uom: string;
+
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  opening_balance?: number;
   
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  opening_rate?: number;
+  
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  opening_value?: number;
+  
+  @property({
+    type: 'string',
+  })
+  gst_nature_of_goods?: string;
+
+  @property({
+    type: 'string',
+  })
+  gst_hsn_code?: string;
+
+  @property({
+    type: 'string',
+  })
+  gst_taxability?: string;
+
   @property({
     type: 'date',
   })
@@ -37,9 +112,6 @@ export class Product extends Entity {
     type: 'date',
   })
   updatedAt?: Date;
-
-  @hasMany(() => Variation, {through: {model: () => ProductVariation}})
-  variations: Variation[];
 
   constructor(data?: Partial<Product>) {
     super(data);

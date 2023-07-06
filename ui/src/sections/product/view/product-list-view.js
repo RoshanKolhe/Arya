@@ -37,6 +37,8 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import { useGetProducts } from 'src/api/product';
+import axiosInstance, { endpoints } from 'src/utils/axios';
+import { useSnackbar } from 'notistack';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
 import ProductTableFiltersResult from '../product-table-filters-result';
@@ -45,11 +47,9 @@ import ProductTableFiltersResult from '../product-table-filters-result';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Product' },
-  { id: 'createdAt', label: 'Create at', width: 160 },
-  { id: 'inventoryType', label: 'Stock', width: 160 },
-  { id: 'price', label: 'Price', width: 140 },
-  { id: 'publish', label: 'Publish', width: 110 },
-  { id: '', width: 88 },
+  { id: 'uom', label: 'Quantity', width: 160 },
+  { id: 'opening_rate', label: 'Rate', width: 140 },
+  { id: 'opening_value', label: 'Value', width: 110 },
 ];
 
 const PUBLISH_OPTIONS = [
@@ -75,7 +75,7 @@ export default function ProductListView() {
   const [tableData, setTableData] = useState([]);
 
   const [filters, setFilters] = useState(defaultFilters);
-
+  const { enqueueSnackbar } = useSnackbar();
   const { products, productsLoading, productsEmpty } = useGetProducts();
 
   const confirm = useBoolean();
@@ -113,7 +113,22 @@ export default function ProductListView() {
     },
     [table]
   );
-
+  const handleProductSyncFromTally = () => {
+    axiosInstance
+      .post(endpoints.product.sync)
+      .then((res) => {
+        const { data } = res;
+        enqueueSnackbar(data?.message || 'Sync successfull');
+      })
+      .catch((err) => {
+        enqueueSnackbar(
+          err.response.data.error.message
+            ? err.response.data.error.message
+            : 'something went wrong!',
+          { variant: 'error' }
+        );
+      });
+  };
   const handleDeleteRow = useCallback(
     (id) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
@@ -169,11 +184,13 @@ export default function ProductListView() {
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.product.new}
+              onClick={() => {
+                handleProductSyncFromTally();
+              }}
               variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
+              startIcon={<Iconify icon="ci:arrows-reload-01" />}
             >
-              New Product
+              Sync
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
