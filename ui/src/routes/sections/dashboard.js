@@ -70,6 +70,15 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <ProductEditPage /> },
         ],
       },
+      {
+        path: 'ledger',
+        children: [
+          { element: <ProductListPage />, index: true },
+          { path: 'list', element: <ProductListPage /> },
+          { path: 'new', element: <ProductCreatePage /> },
+          { path: ':id/edit', element: <ProductEditPage /> },
+        ],
+      },
     ],
   },
 ];

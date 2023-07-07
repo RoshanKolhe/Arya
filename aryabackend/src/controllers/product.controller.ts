@@ -151,6 +151,8 @@ export class ProductController {
     }
   }
 
+
+
   @get('/api/products/list')
   async find(
     @param.filter(Product) filter?: Filter<Product>,

@@ -84,6 +84,15 @@ export function useNavData() {
           // },
           // PRODUCT
           {
+            title: t('ledgers'),
+            path: paths.dashboard.product.root,
+            icon: ICONS.product,
+            children: [
+              { title: t('list'), path: paths.dashboard.ledger.root },
+              // { title: t('create'), path: paths.dashboard.product.new },
+            ],
+          },
+          {
             title: t('product'),
             path: paths.dashboard.product.root,
             icon: ICONS.product,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 const http = require('http');
-import {parseString} from 'xml2js';
+import {parseString, parseStringPromise} from 'xml2js';
 
 interface Product {
   GUID: string;
@@ -17,6 +17,12 @@ interface Product {
   NATUREOFGOODS: string;
   HSNCODE: string;
   TAXABILITY: string;
+}
+
+interface Ledger {
+  name: string;
+  guid: string;
+  openingBalance: number;
 }
 
 export class TallyHttpCallService {
@@ -63,16 +69,15 @@ export class TallyHttpCallService {
     });
   }
 
- parseXmlToObjects(xmlData: string): Promise<Product[]> {
+  parseXmlToObjects(xmlData: string): Promise<Product[]> {
     return new Promise((resolve, reject) => {
       parseString(xmlData, (err, result) => {
         if (err) {
           reject(err);
         } else {
-  
           const envelope = result.ENVELOPE;
           const productArray = [];
-  
+
           const numProducts = envelope.GUID.length;
           for (let i = 0; i < numProducts; i++) {
             const product: Product = {
@@ -93,10 +98,41 @@ export class TallyHttpCallService {
             };
             productArray.push(product);
           }
-  
+
           resolve(productArray);
         }
       });
     });
+  }
+
+  async parseLedgerData(xmlData: string): Promise<Ledger[]> {
+    const parsedData = await parseStringPromise(xmlData, { explicitArray: false });
+    const collection = parsedData.ENVELOPE.BODY.DATA.COLLECTION;
+  
+    if (!collection) {
+      return [];
+    }
+  
+    const ledgersData = collection.LEDGER;
+    const ledgers: Ledger[] = [];
+  
+    if (!Array.isArray(ledgersData)) {
+      // If there is only one ledger, convert it to an array
+      ledgers.push(this.convertLedgerToObject(ledgersData));
+    } else {
+      ledgersData.forEach((ledgerData: any) => {
+        ledgers.push(this.convertLedgerToObject(ledgerData));
+      });
+    }
+  
+    return ledgers;
+  }
+  
+  convertLedgerToObject(ledger: any): Ledger {
+    return {
+      name: ledger.$.NAME,
+      guid: ledger.GUID._,
+      openingBalance: parseFloat(ledger.OPENINGBALANCE._)
+    };
   }
 }
