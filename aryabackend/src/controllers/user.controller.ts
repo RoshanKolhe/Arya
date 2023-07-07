@@ -66,7 +66,7 @@ export class UserController {
     }
 
     validateCredentials(_.pick(userData, ['email', 'password']));
-    userData.permissions = [PermissionKeys.ADMIN];
+    // userData.permissions = [PermissionKeys.ADMIN];
     userData.password = await this.hasher.hashPassword(userData.password);
     const savedUser = await this.userRepository.create(userData);
     const savedUserData = _.omit(savedUser, 'password');
