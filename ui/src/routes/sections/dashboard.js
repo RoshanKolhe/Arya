@@ -8,10 +8,16 @@ import DashboardLayout from 'src/layouts/dashboard';
 import { LoadingScreen } from 'src/components/loading-screen';
 import BrandCreatePage from 'src/pages/dashboard/brand/new';
 import BrandEditPage from 'src/pages/dashboard/brand/edit';
+import UserListPage from 'src/pages/dashboard/user/list';
+import UserCreatePage from 'src/pages/dashboard/user/new';
+import UserEditPage from 'src/pages/dashboard/user/edit';
 
 // ----------------------------------------------------------------------
 
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
+
+// LEDGER
+const LedgerListPage = lazy(() => import('src/pages/dashboard/ledger/list'));
 
 // PRODUCT
 const ProductListPage = lazy(() => import('src/pages/dashboard/product/list'));
@@ -71,12 +77,19 @@ export const dashboardRoutes = [
         ],
       },
       {
+        path: 'User',
+        children: [
+          { element: <UserListPage />, index: true },
+          { path: 'list', element: <UserListPage /> },
+          { path: 'new', element: <UserCreatePage /> },
+          { path: ':id/edit', element: <UserEditPage /> },
+        ],
+      },
+      {
         path: 'ledger',
         children: [
-          { element: <ProductListPage />, index: true },
-          { path: 'list', element: <ProductListPage /> },
-          { path: 'new', element: <ProductCreatePage /> },
-          { path: ':id/edit', element: <ProductEditPage /> },
+          { element: <LedgerListPage />, index: true },
+          { path: 'list', element: <LedgerListPage /> },
         ],
       },
     ],

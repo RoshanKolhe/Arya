@@ -39,8 +39,9 @@ import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import axiosInstance, { endpoints } from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
 import { useGetLedgers } from 'src/api/ledger';
-import BrandTableRow from '../ledger-table-row';
-import BrandTableToolbar from '../ledger-table-toolbar';
+import { useGetUsers } from 'src/api/user';
+import UserTableRow from '../user-table-row';
+import UserTableToolbar from '../user-table-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -55,7 +56,7 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function LedgerListView() {
+export default function UserListView() {
   const router = useRouter();
 
   const table = useTable();
@@ -68,15 +69,15 @@ export default function LedgerListView() {
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const { ledgers, ledgersLoading, ledgersEmpty, refreshLedgers } = useGetLedgers();
+  const { users, usersLoading, usersEmpty, refreshUsers } = useGetUsers();
 
   const confirm = useBoolean();
 
   useEffect(() => {
-    if (ledgers.length) {
-      setTableData(ledgers);
+    if (users.length) {
+      setTableData(users);
     }
-  }, [ledgers]);
+  }, [users]);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -93,7 +94,7 @@ export default function LedgerListView() {
 
   const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = (!dataFiltered.length && canReset) || ledgersEmpty;
+  const notFound = (!dataFiltered.length && canReset) || usersEmpty;
 
   const handleFilters = useCallback(
     (name, value) => {
@@ -106,21 +107,8 @@ export default function LedgerListView() {
     [table]
   );
 
-  const handleLedgerSyncFromTally = () => {
-    axiosInstance
-      .post(endpoints.ledger.sync)
-      .then((res) => {
-        const { data } = res;
-        enqueueSnackbar(data?.message || 'Sync successfull');
-      })
-      .catch((err) => {
-        enqueueSnackbar(
-          err.response.data.error.message
-            ? err.response.data.error.message
-            : 'something went wrong!',
-          { variant: 'error' }
-        );
-      });
+  const handleNewUser = () => {
+    console.log('here');
   };
 
   const handleDeleteRow = useCallback(
@@ -129,7 +117,7 @@ export default function LedgerListView() {
         .delete(`/api/brands/${id}`)
         .then((res) => {
           enqueueSnackbar('Delete Success!');
-          refreshLedgers();
+          refreshUsers();
         })
         .catch((err) => {
           console.error(err);
@@ -142,7 +130,7 @@ export default function LedgerListView() {
         });
       deleteConfirm.onFalse();
     },
-    [enqueueSnackbar, refreshLedgers]
+    [enqueueSnackbar, refreshUsers]
   );
 
   const handleDeleteRows = useCallback(() => {
@@ -164,7 +152,7 @@ export default function LedgerListView() {
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
             {
-              name: 'Ledger',
+              name: 'User',
               href: paths.dashboard.brand.root,
             },
             { name: 'List' },
@@ -173,19 +161,19 @@ export default function LedgerListView() {
             <Button
               component={RouterLink}
               onClick={() => {
-                handleLedgerSyncFromTally();
+                handleNewUser();
               }}
               variant="contained"
-              startIcon={<Iconify icon="ci:arrows-reload-01" />}
+              startIcon={<Iconify icon="material-symbols:add" />}
             >
-              Sync
+              New User
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
         <Card>
-          <BrandTableToolbar filters={filters} onFilters={handleFilters} />
+          <UserTableToolbar filters={filters} onFilters={handleFilters} />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <TableSelectedAction
               dense={table.dense}
@@ -224,7 +212,7 @@ export default function LedgerListView() {
                 />
 
                 <TableBody>
-                  {ledgersLoading ? (
+                  {usersLoading ? (
                     [...Array(table.rowsPerPage)].map((i, index) => (
                       <TableSkeleton key={index} sx={{ height: denseHeight }} />
                     ))
@@ -236,7 +224,7 @@ export default function LedgerListView() {
                           table.page * table.rowsPerPage + table.rowsPerPage
                         )
                         .map((row) => (
-                          <BrandTableRow
+                          <UserTableRow
                             key={row.id}
                             row={row}
                             selected={table.selected.includes(row.id)}

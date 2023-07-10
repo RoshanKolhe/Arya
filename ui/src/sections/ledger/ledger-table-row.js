@@ -25,15 +25,8 @@ import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-export default function BrandTableRow({
-  row,
-  selected,
-  onSelectRow,
-  onDeleteRow,
-  onEditRow,
-}) {
-  const { brandName, createdAt, available, inventoryType } =
-    row;
+export default function LedgerTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }) {
+  const { name, opening_balance } = row;
 
   const confirm = useBoolean();
 
@@ -47,27 +40,25 @@ export default function BrandTableRow({
         </TableCell>
 
         <TableCell>
-          <Typography variant="subtitle">{brandName}</Typography>
+          <Typography variant="subtitle">{name}</Typography>
         </TableCell>
 
         <TableCell>
-          <ListItemText
-            primary={format(new Date(createdAt), 'dd MMM yyyy')}
-            secondary={format(new Date(createdAt), 'p')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
-          />
+          <Typography variant="subtitle">{`${
+            // eslint-disable-next-line no-nested-ternary
+            opening_balance > 0
+              ? `${opening_balance} Cr`
+              : opening_balance === 0
+              ? opening_balance
+              : `${Math.abs(opening_balance)} Dr`
+          }`}</Typography>
         </TableCell>
 
-        <TableCell align="right">
-          <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>
+        {/* <TableCell align="right">
+            <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
+              <Iconify icon="eva:more-vertical-fill" />
+            </IconButton>
+          </TableCell> */}
       </TableRow>
 
       <CustomPopover
@@ -104,7 +95,13 @@ export default function BrandTableRow({
         title="Delete"
         content="Are you sure want to delete?"
         action={
-          <Button variant="contained" color="error" onClick={()=>{onDeleteRow(confirm)}}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              onDeleteRow(confirm);
+            }}
+          >
             Delete
           </Button>
         }
@@ -113,7 +110,7 @@ export default function BrandTableRow({
   );
 }
 
-BrandTableRow.propTypes = {
+LedgerTableRow.propTypes = {
   onDeleteRow: PropTypes.func,
   onEditRow: PropTypes.func,
   onSelectRow: PropTypes.func,

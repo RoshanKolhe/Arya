@@ -132,19 +132,25 @@ export class UserController {
     strategy: 'jwt',
     options: {required: [PermissionKeys.ADMIN]},
   })
-  @get('/users')
+  @get('/api/users/list')
   @response(200, {
     description: 'Array of Users model instances',
     content: {
       'application/json': {
         schema: {
           type: 'array',
-          items: getModelSchemaRef(User, {includeRelations: true}),
+          items: getModelSchemaRef(User, {
+            includeRelations: true,
+          }),
         },
       },
     },
   })
   async find(@param.filter(User) filter?: Filter<User>): Promise<User[]> {
+    filter = {
+      ...filter,
+      fields: {password: false,otp:false,otpExpireAt:false},
+    };
     return this.userRepository.find(filter);
   }
 
@@ -152,7 +158,7 @@ export class UserController {
     strategy: 'jwt',
     options: {required: [PermissionKeys.ADMIN]},
   })
-  @get('/users/{id}', {
+  @get('/api/users/{id}', {
     responses: {
       '200': {
         description: 'User Details',

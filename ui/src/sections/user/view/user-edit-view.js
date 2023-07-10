@@ -8,20 +8,19 @@ import { useGetProduct } from 'src/api/product';
 // components
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import UserNewEditForm from '../user-new-edit-form';
 //
-import { useGetBrand } from 'src/api/brand';
-import BrandNewEditForm from '../brand-new-edit-form';
 
 // ----------------------------------------------------------------------
 
-export default function BrandEditView() {
+export default function ProductEditView() {
   const settings = useSettingsContext();
 
   const params = useParams();
 
   const { id } = params;
 
-  const { brand: currentBrand } = useGetBrand(`${id}`);
+  const { product: currentProduct } = useGetProduct(`${id}`);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -30,17 +29,17 @@ export default function BrandEditView() {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           {
-            name: 'Brand',
-            href: paths.dashboard.brand.root,
+            name: 'Product',
+            href: paths.dashboard.product.root,
           },
-          { name: currentBrand?.categoryName },
+          { name: currentProduct?.name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <BrandNewEditForm currentBrand={currentBrand} />
+      <UserNewEditForm currentProduct={currentProduct} />
     </Container>
   );
 }

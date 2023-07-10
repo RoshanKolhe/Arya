@@ -27,6 +27,12 @@ export class User extends Entity {
   })
   password: string;
 
+  @property({
+    type: 'string',
+    required: true,
+  })
+  contactNo: string;
+
   @property.array(String, {
     name: 'permissions',
   })
@@ -57,7 +63,6 @@ export class User extends Entity {
     type: 'string',
   })
   otpExpireAt: string;
-
 
   constructor(data?: Partial<User>) {
     super(data);

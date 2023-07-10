@@ -32,6 +32,7 @@ const ICONS = {
   banking: icon('ic_banking'),
   booking: icon('ic_booking'),
   invoice: icon('ic_invoice'),
+  ledger: icon('ic_ledger'),
   product: icon('ic_product'),
   calendar: icon('ic_calendar'),
   disabled: icon('ic_disabled'),
@@ -82,16 +83,33 @@ export function useNavData() {
           //     { title: t('create'), path: paths.dashboard.brand.new },
           //   ],
           // },
-          // PRODUCT
+
+          // USER
+
+          {
+            title: t('user'),
+            path: paths.dashboard.user.root,
+            icon: ICONS.user,
+            children: [
+              { title: t('list'), path: paths.dashboard.user.root },
+              { title: t('create'), path: paths.dashboard.user.new },
+            ],
+          },
+
+          // LEDGERS
+
           {
             title: t('ledgers'),
-            path: paths.dashboard.product.root,
-            icon: ICONS.product,
+            path: paths.dashboard.ledger.root,
+            icon: ICONS.ledger,
             children: [
               { title: t('list'), path: paths.dashboard.ledger.root },
               // { title: t('create'), path: paths.dashboard.product.new },
             ],
           },
+
+          // PRODUCT
+
           {
             title: t('product'),
             path: paths.dashboard.product.root,

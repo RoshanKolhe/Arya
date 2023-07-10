@@ -29,26 +29,26 @@ import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
-export default function BrandNewEditForm({ currentBrand }) {
+export default function UserNewEditForm({ currentCategory }) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const NewBrandSchema = Yup.object().shape({
-    brandName: Yup.string().required('Brand Name is required'),
+  const NewCategorySchema = Yup.object().shape({
+    categoryName: Yup.string().required('User Name is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      brandName: currentBrand?.brandName || '',
+      categoryName: currentCategory?.categoryName || '',
     }),
-    [currentBrand]
+    [currentCategory]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewBrandSchema),
+    resolver: yupResolver(NewCategorySchema),
     defaultValues,
   });
 
@@ -59,23 +59,23 @@ export default function BrandNewEditForm({ currentBrand }) {
   } = methods;
 
   useEffect(() => {
-    if (currentBrand) {
+    if (currentCategory) {
       reset(defaultValues);
     }
-  }, [currentBrand, defaultValues, reset]);
+  }, [currentCategory, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      if (currentBrand) {
+      if (currentCategory) {
         const inputData = {
-          brandName: data.brandName,
+          categoryName: data.categoryName,
         };
         await axiosInstance
-          .patch(`/api/brands/${currentBrand.id}`, inputData)
+          .patch(`/api/categories/${currentCategory.id}`, inputData)
           .then((res) => {
             reset();
             enqueueSnackbar('Update success!');
-            router.push(paths.dashboard.brand.root);
+            router.push(paths.dashboard.category.root);
           })
           .catch((err) => {
             enqueueSnackbar(
@@ -87,14 +87,14 @@ export default function BrandNewEditForm({ currentBrand }) {
           });
       } else {
         const inputData = {
-          brandName: data.brandName,
+          categoryName: data.categoryName,
         };
         await axiosInstance
-          .post(`/api/brands/create`, inputData)
+          .post(`/api/category/create`, inputData)
           .then((res) => {
             reset();
             enqueueSnackbar('Create success!');
-            router.push(paths.dashboard.brand.root);
+            router.push(paths.dashboard.category.root);
           })
           .catch((err) => {
             console.error(err.response.data.error.message);
@@ -130,7 +130,7 @@ export default function BrandNewEditForm({ currentBrand }) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="brandName" label="Brand Name" />
+            <RHFTextField name="categoryName" label="Category Name" />
           </Stack>
         </Card>
       </Grid>
@@ -142,7 +142,7 @@ export default function BrandNewEditForm({ currentBrand }) {
       {mdUp && <Grid md={4} />}
       <Grid xs={12} md={8} sx={{ display: 'flex', justifyContent: 'end' }}>
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentBrand ? 'Create Brand' : 'Save Changes'}
+          {!currentCategory ? 'Create Category' : 'Save Changes'}
         </LoadingButton>
       </Grid>
     </>
@@ -158,6 +158,6 @@ export default function BrandNewEditForm({ currentBrand }) {
   );
 }
 
-BrandNewEditForm.propTypes = {
-  currentBrand: PropTypes.object,
+UserNewEditForm.propTypes = {
+  currentCategory: PropTypes.object,
 };

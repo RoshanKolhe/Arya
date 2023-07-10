@@ -45,6 +45,12 @@ export const endpoints = {
     latest: '/api/post/latest',
     search: '/api/post/search',
   },
+  ledger: {
+    list: '/api/ledgers/list',
+    details: '/api/ledger/details',
+    search: '/api/ledger/search',
+    sync: '/api/ledgers/sync',
+  },
   product: {
     list: '/api/products/list',
     details: '/api/product/details',
@@ -60,5 +66,10 @@ export const endpoints = {
     list: '/api/brands/list',
     details: (id) => `/api/brands/${id}`,
     search: '/api/brands/search',
+  },
+  user: {
+    list: '/api/users/list',
+    details: (id) => `/api/user/${id}`,
+    search: '/api/user/search',
   },
 };

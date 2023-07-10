@@ -25,6 +25,8 @@ import {inject} from '@loopback/core';
 import {AryaDataSource} from '../datasources';
 import {TallyHttpCallService} from '../services/tally-http-call';
 import {STOCK_ITEM_XML} from '../helpers/getProductsTallyXml';
+import {authenticate} from '@loopback/authentication';
+import {PermissionKeys} from '../authorization/permission-keys';
 
 export class ProductController {
   constructor(
@@ -36,6 +38,10 @@ export class ProductController {
     public tallyPostService: TallyHttpCallService,
   ) {}
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @post('/api/products')
   @response(200, {
     description: 'Product model instance',
@@ -83,6 +89,10 @@ export class ProductController {
     // }
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @get('/api/products/count')
   @response(200, {
     description: 'Product model count',
@@ -92,6 +102,10 @@ export class ProductController {
     return this.productRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @post('/api/products/sync')
   async syncProducts(): Promise<any> {
     try {
@@ -151,8 +165,10 @@ export class ProductController {
     }
   }
 
-
-
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @get('/api/products/list')
   async find(
     @param.filter(Product) filter?: Filter<Product>,
@@ -160,6 +176,10 @@ export class ProductController {
     return this.productRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @get('/api/products/{id}')
   @response(200, {
     description: 'Product model instance',
@@ -203,6 +223,10 @@ export class ProductController {
     return product;
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @patch('/api/products/{id}')
   @response(204, {
     description: 'Product PATCH success',
@@ -257,6 +281,10 @@ export class ProductController {
     // }
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @del('/api/products/{id}')
   @response(204, {
     description: 'Product DELETE success',

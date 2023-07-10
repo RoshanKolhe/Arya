@@ -25,6 +25,8 @@ import {FETCH_LEDGER_ACCOUNTS_XML} from '../helpers/getSalesLedgerAccounts';
 import {TallyHttpCallService} from '../services/tally-http-call';
 import {inject} from '@loopback/core';
 import {AryaDataSource} from '../datasources';
+import {authenticate} from '@loopback/authentication';
+import {PermissionKeys} from '../authorization/permission-keys';
 
 export class LedgerController {
   constructor(
@@ -36,6 +38,10 @@ export class LedgerController {
     public tallyPostService: TallyHttpCallService,
   ) {}
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.ADMIN, PermissionKeys.SALES]},
+  })
   @post('/api/ledgers')
   @response(200, {
     description: 'Ledger model instance',
@@ -57,6 +63,10 @@ export class LedgerController {
     return this.ledgerRepository.create(ledger);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.ADMIN, PermissionKeys.SALES]},
+  })
   @get('/api/ledgers/count')
   @response(200, {
     description: 'Ledger model count',
@@ -66,6 +76,10 @@ export class LedgerController {
     return this.ledgerRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @get('/api/ledgers/list')
   @response(200, {
     description: 'Array of Ledger model instances',
@@ -82,6 +96,10 @@ export class LedgerController {
     return this.ledgerRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @post('/api/ledgers/sync')
   async syncLedgers(): Promise<any> {
     try {
@@ -128,6 +146,10 @@ export class LedgerController {
     }
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @patch('/api/ledgers')
   @response(200, {
     description: 'Ledger PATCH success count',
@@ -147,6 +169,10 @@ export class LedgerController {
     return this.ledgerRepository.updateAll(ledger, where);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @get('/api/ledgers/{id}')
   @response(200, {
     description: 'Ledger model instance',
@@ -164,6 +190,10 @@ export class LedgerController {
     return this.ledgerRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @patch('/api/ledgers/{id}')
   @response(204, {
     description: 'Ledger PATCH success',
@@ -182,6 +212,10 @@ export class LedgerController {
     await this.ledgerRepository.updateById(id, ledger);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @put('/api/ledgers/{id}')
   @response(204, {
     description: 'Ledger PUT success',
@@ -193,6 +227,10 @@ export class LedgerController {
     await this.ledgerRepository.replaceById(id, ledger);
   }
 
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @del('/api/ledgers/{id}')
   @response(204, {
     description: 'Ledger DELETE success',

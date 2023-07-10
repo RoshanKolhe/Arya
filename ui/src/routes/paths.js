@@ -38,5 +38,10 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/brand/ledger`,
       edit: (id) => `${ROOTS.DASHBOARD}/ledger/${id}/edit`,
     },
+    user: {
+      root: `${ROOTS.DASHBOARD}/user`,
+      new: `${ROOTS.DASHBOARD}/user/new`,
+      edit: (id) => `${ROOTS.DASHBOARD}/user/${id}/edit`,
+    },
   },
 };
