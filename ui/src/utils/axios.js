@@ -69,7 +69,7 @@ export const endpoints = {
   },
   user: {
     list: '/api/users/list',
-    details: (id) => `/api/user/${id}`,
+    details: (id) => `/api/users/${id}`,
     search: '/api/user/search',
   },
 };

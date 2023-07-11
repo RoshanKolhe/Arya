@@ -25,8 +25,15 @@ import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-export default function UserTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }) {
-  const { name, opening_balance } = row;
+export default function UserTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onDeleteRow,
+  onEditRow,
+  onApproveUser,
+}) {
+  const { name, email, contactNo, createdAt, isActive } = row;
 
   const confirm = useBoolean();
 
@@ -44,21 +51,35 @@ export default function UserTableRow({ row, selected, onSelectRow, onDeleteRow, 
         </TableCell>
 
         <TableCell>
-          <Typography variant="subtitle">{`${
-            // eslint-disable-next-line no-nested-ternary
-            opening_balance > 0
-              ? `${opening_balance} Cr`
-              : opening_balance === 0
-              ? opening_balance
-              : `${Math.abs(opening_balance)} Dr`
-          }`}</Typography>
+          <Typography variant="subtitle">{email}</Typography>
         </TableCell>
 
-        {/* <TableCell align="right">
-            <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
-              <Iconify icon="eva:more-vertical-fill" />
-            </IconButton>
-          </TableCell> */}
+        <TableCell>
+          <Typography variant="subtitle">{contactNo}</Typography>
+        </TableCell>
+
+        <TableCell>
+          <Label color={!isActive ? 'error' : 'success'}>{!isActive ? 'Blocked' : 'Active'}</Label>
+        </TableCell>
+
+        <TableCell>
+          <ListItemText
+            primary={format(new Date(createdAt), 'dd MMM yyyy')}
+            secondary={format(new Date(createdAt), 'p')}
+            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+            secondaryTypographyProps={{
+              mt: 0.5,
+              component: 'span',
+              typography: 'caption',
+            }}
+          />
+        </TableCell>
+
+        <TableCell align="right">
+          <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
+            <Iconify icon="eva:more-vertical-fill" />
+          </IconButton>
+        </TableCell>
       </TableRow>
 
       <CustomPopover
@@ -75,6 +96,16 @@ export default function UserTableRow({ row, selected, onSelectRow, onDeleteRow, 
         >
           <Iconify icon="solar:pen-bold" />
           Edit
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            onApproveUser(row.id, !row.isActive);
+            popover.onClose();
+          }}
+        >
+          <Iconify icon="material-symbols:block" />
+          {!row.isActive ? 'Unblock' : 'Block'}
         </MenuItem>
 
         <MenuItem
@@ -114,6 +145,7 @@ UserTableRow.propTypes = {
   onDeleteRow: PropTypes.func,
   onEditRow: PropTypes.func,
   onSelectRow: PropTypes.func,
+  onApproveUser: PropTypes.func,
   row: PropTypes.object,
   selected: PropTypes.bool,
 };

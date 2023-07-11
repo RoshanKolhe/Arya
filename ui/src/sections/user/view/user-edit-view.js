@@ -8,6 +8,7 @@ import { useGetProduct } from 'src/api/product';
 // components
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import { useGetUser } from 'src/api/user';
 import UserNewEditForm from '../user-new-edit-form';
 //
 
@@ -20,7 +21,7 @@ export default function ProductEditView() {
 
   const { id } = params;
 
-  const { product: currentProduct } = useGetProduct(`${id}`);
+  const { user: currentUser } = useGetUser(`${id}`);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -29,17 +30,17 @@ export default function ProductEditView() {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           {
-            name: 'Product',
-            href: paths.dashboard.product.root,
+            name: 'User',
+            href: paths.dashboard.user.root,
           },
-          { name: currentProduct?.name },
+          { name: currentUser?.name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <UserNewEditForm currentProduct={currentProduct} />
+      <UserNewEditForm currentUser={currentUser} />
     </Container>
   );
 }

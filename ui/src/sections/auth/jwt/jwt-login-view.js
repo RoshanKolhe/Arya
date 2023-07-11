@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
@@ -65,8 +66,14 @@ export default function JwtLoginView() {
 
       router.push(returnTo || PATH_AFTER_LOGIN);
     } catch (error) {
-      console.error(error);
-      setErrorMsg(typeof error === 'string' ? error : error?.error?.message);
+      console.error(error?.message);
+      setErrorMsg(
+        typeof error === 'string'
+          ? error
+          : error?.error?.message
+          ? error?.error?.message
+          : error?.message
+      );
     }
   });
 
@@ -105,7 +112,14 @@ export default function JwtLoginView() {
         }}
       />
 
-      <Link variant="body2" color="inherit" underline="always" sx={{ alignSelf: 'flex-end' }}>
+      <Link
+        component={RouterLink}
+        href={paths.auth.jwt.forgotPassword}
+        variant="body2"
+        color="inherit"
+        underline="always"
+        sx={{ alignSelf: 'flex-end' }}
+      >
         Forgot password?
       </Link>
 

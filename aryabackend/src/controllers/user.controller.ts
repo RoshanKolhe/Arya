@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {Filter, repository} from '@loopback/repository';
 import {UserProfile} from '@loopback/security';
 import {
@@ -9,6 +10,7 @@ import {
   get,
   response,
   param,
+  patch,
 } from '@loopback/rest';
 import {User} from '../models';
 import * as _ from 'lodash';
@@ -21,9 +23,15 @@ import {BcryptHasher} from '../services/hash.password.bcrypt';
 import {CredentialsRequestBody} from './specs/user-controller-spec';
 import {MyUserService} from '../services/user-service';
 import {JWTService} from '../services/jwt-service';
+import generateOtpTemplate from '../templates/otp.template';
+import SITE_SETTINGS from '../utils/config';
+import {EmailManagerBindings} from '../keys';
+import {EmailManager} from '../services/email.service';
 
 export class UserController {
   constructor(
+    @inject(EmailManagerBindings.SEND_MAIL)
+    public emailManager: EmailManager,
     @repository(UserRepository)
     public userRepository: UserRepository,
     @inject('service.hasher')
@@ -149,7 +157,7 @@ export class UserController {
   async find(@param.filter(User) filter?: Filter<User>): Promise<User[]> {
     filter = {
       ...filter,
-      fields: {password: false,otp:false,otpExpireAt:false},
+      fields: {password: false, otp: false, otpExpireAt: false},
     };
     return this.userRepository.find(filter);
   }
@@ -175,9 +183,116 @@ export class UserController {
       where: {
         id: id,
       },
+      fields: {
+        password: false,
+        otp: false,
+        otpExpireAt: false,
+      },
     });
     return Promise.resolve({
       ...user,
     });
+  }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.ADMIN]},
+  })
+  @patch('/api/users/{id}')
+  @response(204, {
+    description: 'User PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(User, {partial: true}),
+        },
+      },
+    })
+    user: User,
+  ): Promise<void> {
+    await this.userRepository.updateById(id, user);
+  }
+
+  @post('/sendOtp')
+  async sendOtp(
+    @requestBody({})
+    userData: any,
+  ): Promise<object> {
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const template = generateOtpTemplate({...userData, otp: otp || '000000'});
+    const user = await this.userRepository.findOne({
+      where: {
+        email: userData.email,
+      },
+    });
+    if (user) {
+      const now = new Date();
+      await this.userRepository.updateById(user.id, {
+        otp: `${otp}`,
+        otpExpireAt: `${this.addMinutesToDate(now, 10)}`,
+      });
+    } else {
+      throw new HttpErrors.BadRequest("Email Doesn't Exists");
+    }
+    const mailOptions = {
+      from: SITE_SETTINGS.fromMail,
+      to: userData.email,
+      subject: template.subject,
+      html: template.html,
+    };
+    await this.emailManager
+      .sendMail(mailOptions)
+      .then(function (res: any) {
+        return Promise.resolve({
+          success: true,
+          message: `Successfully sent otp mail to ${userData.email}`,
+        });
+      })
+      .catch(function (err: any) {
+        throw new HttpErrors.UnprocessableEntity(err);
+      });
+    return Promise.resolve({
+      success: true,
+      message: `Successfully sent otp mail to ${userData.email}`,
+    });
+  }
+
+  @post('/verifyOtp')
+  async verifyOtp(
+    @requestBody({})
+    otpOptions: any,
+  ): Promise<object> {
+    const user = await this.userRepository.findOne({
+      where: {
+        email: otpOptions.email,
+      },
+    });
+    if (user) {
+      const now = new Date();
+      const expire_date = new Date(user.otpExpireAt);
+      if (now <= expire_date && otpOptions.otp === user.otp) {
+        await this.userRepository.updateById(user.id, {
+          password: otpOptions.password,
+        });
+        return {
+          success: true,
+          message: 'otp verification successfull',
+        };
+      } else {
+        return {
+          success: false,
+          error: 'otp verification failed',
+        };
+      }
+    } else {
+      throw new HttpErrors.BadRequest("Email Doesn't Exists");
+    }
+  }
+
+  addMinutesToDate(date: any, minutes: any) {
+    return new Date(date.getTime() + minutes * 60000);
   }
 }

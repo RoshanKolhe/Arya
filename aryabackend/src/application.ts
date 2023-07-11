@@ -18,6 +18,8 @@ import {
 import {JWTStrategy} from './authentication-strategy/jwt-strategy';
 import {MyUserService} from './services/user-service';
 import {TallyHttpCallService} from './services/tally-http-call';
+import {EmailManagerBindings} from './keys';
+import {EmailService} from './services/email.service';
 
 export {ApplicationConfig};
 
@@ -62,5 +64,6 @@ export class AryabackendApplication extends BootMixin(
     this.bind('service.jwt.service').toClass(JWTService);
     this.bind('service.user.service').toClass(MyUserService);
     this.bind('service.tally.service').toClass(TallyHttpCallService);
+    this.bind(EmailManagerBindings.SEND_MAIL).toClass(EmailService);
   }
 }

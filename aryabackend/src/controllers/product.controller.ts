@@ -160,8 +160,7 @@ export class ProductController {
         );
       }
     } catch (error) {
-      console.log(error);
-      throw new Error('Error synchronizing products.');
+      throw new HttpErrors.PreconditionFailed(error.message);
     }
   }
 

@@ -28,17 +28,17 @@ export function useGetUsers() {
 
 // ----------------------------------------------------------------------
 
-export function useGetBrand(brandId) {
-  const URL = brandId ? [endpoints.brand.details(brandId)] : null;
+export function useGetUser(userId) {
+  const URL = userId ? [endpoints.user.details(userId)] : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
-      brand: data,
-      brandLoading: isLoading,
-      brandError: error,
-      brandValidating: isValidating,
+      user: data,
+      userLoading: isLoading,
+      userError: error,
+      userValidating: isValidating,
     }),
     [data, error, isLoading, isValidating]
   );

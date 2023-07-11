@@ -26,29 +26,56 @@ import { useRouter } from 'src/routes/hook';
 import { RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import axiosInstance from 'src/utils/axios';
+import { IconButton, InputAdornment } from '@mui/material';
+import Iconify from 'src/components/iconify/iconify';
+import { useBoolean } from 'src/hooks/use-boolean';
 
 // ----------------------------------------------------------------------
 
-export default function UserNewEditForm({ currentCategory }) {
+export default function UserNewEditForm({ currentUser }) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const NewCategorySchema = Yup.object().shape({
-    categoryName: Yup.string().required('User Name is required'),
+  const password = useBoolean();
+
+  const NewUserSchema = Yup.object().shape({
+    name: Yup.string().required('User Name is required'),
+    email: Yup.string().email('Email must be a valid email address').required('email is required'),
+    password: Yup.string()
+      .min(8, 'Password is too short - should be 8 chars minimum.')
+      .matches(
+        // eslint-disable-next-line no-useless-escape
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
+        'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One Special Case Character'
+      )
+      .test('', (value, context) => {
+        // Check if the condition is true
+        if (!currentUser) {
+          // Apply the required validation
+          return Yup.string().required('Password is required').isValidSync(value);
+        }
+        // Skip the required validation
+        return true;
+      }),
+    contactNo: Yup.string('Enter Contact Number')
+      .required('Contact Number is required')
+      .max(10, 'Must be less than 10 characters'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      categoryName: currentCategory?.categoryName || '',
+      name: currentUser?.name || '',
+      email: currentUser?.email || '',
+      contactNo: currentUser?.contactNo || '',
     }),
-    [currentCategory]
+    [currentUser]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewCategorySchema),
+    resolver: yupResolver(NewUserSchema),
     defaultValues,
   });
 
@@ -59,23 +86,26 @@ export default function UserNewEditForm({ currentCategory }) {
   } = methods;
 
   useEffect(() => {
-    if (currentCategory) {
+    if (currentUser) {
       reset(defaultValues);
     }
-  }, [currentCategory, defaultValues, reset]);
+  }, [currentUser, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log(data);
     try {
-      if (currentCategory) {
+      if (currentUser) {
         const inputData = {
-          categoryName: data.categoryName,
+          name: data.name,
+          email: data.email,
+          contactNo: data.contactNo,
         };
         await axiosInstance
-          .patch(`/api/categories/${currentCategory.id}`, inputData)
+          .patch(`/api/users/${currentUser.id}`, inputData)
           .then((res) => {
             reset();
             enqueueSnackbar('Update success!');
-            router.push(paths.dashboard.category.root);
+            router.push(paths.dashboard.user.root);
           })
           .catch((err) => {
             enqueueSnackbar(
@@ -87,14 +117,19 @@ export default function UserNewEditForm({ currentCategory }) {
           });
       } else {
         const inputData = {
-          categoryName: data.categoryName,
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          contactNo: data.contactNo,
+          isActive: true,
+          permissions: ['sales'],
         };
         await axiosInstance
-          .post(`/api/category/create`, inputData)
+          .post(`/register`, inputData)
           .then((res) => {
             reset();
             enqueueSnackbar('Create success!');
-            router.push(paths.dashboard.category.root);
+            router.push(paths.dashboard.user.root);
           })
           .catch((err) => {
             console.error(err.response.data.error.message);
@@ -120,7 +155,7 @@ export default function UserNewEditForm({ currentCategory }) {
             Details
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title...
+            Name,Email,Contact No...
           </Typography>
         </Grid>
       )}
@@ -130,7 +165,27 @@ export default function UserNewEditForm({ currentCategory }) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="categoryName" label="Category Name" />
+            <RHFTextField name="name" label="Name" />
+            <RHFTextField name="email" label="Email" />
+            {!currentUser ? (
+              <RHFTextField
+                name="password"
+                label="Password"
+                type={password.value ? 'text' : 'password'}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={password.onToggle} edge="end">
+                        <Iconify
+                          icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                        />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            ) : null}
+            <RHFTextField name="contactNo" label="Contact" />
           </Stack>
         </Card>
       </Grid>
@@ -142,7 +197,7 @@ export default function UserNewEditForm({ currentCategory }) {
       {mdUp && <Grid md={4} />}
       <Grid xs={12} md={8} sx={{ display: 'flex', justifyContent: 'end' }}>
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentCategory ? 'Create Category' : 'Save Changes'}
+          {!currentUser ? 'Create User' : 'Save Changes'}
         </LoadingButton>
       </Grid>
     </>
@@ -159,5 +214,5 @@ export default function UserNewEditForm({ currentCategory }) {
 }
 
 UserNewEditForm.propTypes = {
-  currentCategory: PropTypes.object,
+  currentUser: PropTypes.object,
 };

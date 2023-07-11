@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
 
         const response = await axios.get(endpoints.auth.me);
 
-        const user  = response.data;
+        const user = response.data;
 
         dispatch({
           type: 'INITIAL',
@@ -104,6 +104,11 @@ export function AuthProvider({ children }) {
     const response = await axios.post(endpoints.auth.login, data);
 
     const { accessToken, user } = response.data;
+
+    const hasAdminPermission = user.permissions.includes('admin');
+    if (!hasAdminPermission) {
+      throw new Error('You do not have admin permission.');
+    }
 
     setSession(accessToken);
 

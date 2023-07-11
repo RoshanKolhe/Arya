@@ -121,12 +121,10 @@ export default function ProductListView() {
         enqueueSnackbar(data?.message || 'Sync successfull');
       })
       .catch((err) => {
-        enqueueSnackbar(
-          err.response.data.error.message
-            ? err.response.data.error.message
-            : 'something went wrong!',
-          { variant: 'error' }
-        );
+        console.log(err);
+        enqueueSnackbar(err?.error?.message ? err.error.message : 'something went wrong!', {
+          variant: 'error',
+        });
       });
   };
   const handleDeleteRow = useCallback(

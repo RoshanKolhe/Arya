@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 import isEqual from 'lodash/isEqual';
 import { useState, useEffect, useCallback } from 'react';
 // @mui
@@ -47,7 +48,11 @@ import UserTableToolbar from '../user-table-toolbar';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name' },
-  { id: 'opening_balance', label: 'Current Balance', width: 160 },
+  { id: 'email', label: 'Email' },
+  { id: 'contactNo', label: 'Contact', width: 160 },
+  { id: 'isActive', label: 'Status', width: 160 },
+  { id: 'createdAt', label: 'Create At', width: 160 },
+  { id: '', width: 80 },
 ];
 
 const defaultFilters = {
@@ -75,7 +80,8 @@ export default function UserListView() {
 
   useEffect(() => {
     if (users.length) {
-      setTableData(users);
+      const updatedUsers = users.filter((obj) => !obj.permissions.includes('admin'));
+      setTableData(updatedUsers);
     }
   }, [users]);
 
@@ -107,9 +113,12 @@ export default function UserListView() {
     [table]
   );
 
-  const handleNewUser = () => {
-    console.log('here');
-  };
+  const handleEditRow = useCallback(
+    (id) => {
+      router.push(paths.dashboard.user.edit(id));
+    },
+    [router]
+  );
 
   const handleDeleteRow = useCallback(
     async (id, deleteConfirm) => {
@@ -129,6 +138,29 @@ export default function UserListView() {
           );
         });
       deleteConfirm.onFalse();
+    },
+    [enqueueSnackbar, refreshUsers]
+  );
+
+  const handleApproveOrBlock = useCallback(
+    async (id, isActive) => {
+      await axiosInstance
+        .patch(`/api/users/${id}`, {
+          isActive,
+        })
+        .then((res) => {
+          enqueueSnackbar(!isActive ? 'Block success' : 'Unblock success');
+          refreshUsers();
+        })
+        .catch((err) => {
+          console.error(err);
+          enqueueSnackbar(
+            err.response.data.error.message
+              ? err.response.data.error.message
+              : 'something went wrong!',
+            { variant: 'error' }
+          );
+        });
     },
     [enqueueSnackbar, refreshUsers]
   );
@@ -153,16 +185,14 @@ export default function UserListView() {
             { name: 'Dashboard', href: paths.dashboard.root },
             {
               name: 'User',
-              href: paths.dashboard.brand.root,
+              href: paths.dashboard.user.root,
             },
             { name: 'List' },
           ]}
           action={
             <Button
               component={RouterLink}
-              onClick={() => {
-                handleNewUser();
-              }}
+              href={paths.dashboard.user.new}
               variant="contained"
               startIcon={<Iconify icon="material-symbols:add" />}
             >
@@ -230,7 +260,10 @@ export default function UserListView() {
                             selected={table.selected.includes(row.id)}
                             onSelectRow={() => table.onSelectRow(row.id)}
                             onDeleteRow={(deleteConfirm) => handleDeleteRow(row.id, deleteConfirm)}
-                            onEditRow={() => {}}
+                            onEditRow={() => {
+                              handleEditRow(row.id);
+                            }}
+                            onApproveUser={(id, isActive) => handleApproveOrBlock(id, isActive)}
                           />
                         ))}
                     </>
