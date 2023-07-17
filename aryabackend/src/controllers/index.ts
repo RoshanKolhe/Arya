@@ -4,3 +4,4 @@ export * from './category.controller';
 export * from './brand.controller';
 export * from './product.controller';
 export * from './ledger.controller';
+export * from './voucher.controller';

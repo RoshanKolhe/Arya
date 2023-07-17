@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
-const http = require('http');
+import http from 'http';
 import {parseString, parseStringPromise} from 'xml2js';
 
 interface Product {
@@ -17,6 +17,25 @@ interface Product {
   NATUREOFGOODS: string;
   HSNCODE: string;
   TAXABILITY: string;
+}
+
+interface Voucher {
+  GUID: string;
+  ALTERID: string;
+  DATE: string;
+  VOUCHER_TYPE: string;
+  _VOUCHER_TYPE: string;
+  VOUCHER_NUMBER: string;
+  REFERENCE_NUMBER: string;
+  REFERENCE_DATE: string;
+  NARRATION: string;
+  PARTY_NAME: string;
+  _PARTY_NAME: string;
+  PLACE_OF_SUPPLY: string;
+  IS_INVOICE: string;
+  IS_ACCOUNTING_VOUCHER: string;
+  IS_INVENTORY_VOUCHER: string;
+  IS_ORDER_VOUCHER: string;
 }
 
 interface Ledger {
@@ -106,16 +125,18 @@ export class TallyHttpCallService {
   }
 
   async parseLedgerData(xmlData: string): Promise<Ledger[]> {
-    const parsedData = await parseStringPromise(xmlData, { explicitArray: false });
+    const parsedData = await parseStringPromise(xmlData, {
+      explicitArray: false,
+    });
     const collection = parsedData.ENVELOPE.BODY.DATA.COLLECTION;
-  
+
     if (!collection) {
       return [];
     }
-  
+
     const ledgersData = collection.LEDGER;
     const ledgers: Ledger[] = [];
-  
+
     if (!Array.isArray(ledgersData)) {
       // If there is only one ledger, convert it to an array
       ledgers.push(this.convertLedgerToObject(ledgersData));
@@ -124,15 +145,75 @@ export class TallyHttpCallService {
         ledgers.push(this.convertLedgerToObject(ledgerData));
       });
     }
-  
+
     return ledgers;
   }
-  
+
   convertLedgerToObject(ledger: any): Ledger {
     return {
       name: ledger.$.NAME,
       guid: ledger.GUID._,
-      openingBalance: parseFloat(ledger.OPENINGBALANCE._)
+      openingBalance: parseFloat(ledger.OPENINGBALANCE._),
     };
+  }
+
+  parseActiveCompany(xmlData: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      parseString(xmlData, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const envelope =
+            result.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].COMPANY[0];
+          const finalActiveCompanyData = {
+            name: envelope.NAME[0]._,
+            guid: envelope.GUID[0]._,
+            companyNo: envelope.COMPANYNUMBER[0]._,
+            booksFrom: envelope.BOOKSFROM[0]._,
+            startingFrom: envelope.STARTINGFROM[0]._,
+            endAt: envelope.ENDINGAT[0]._,
+          };
+          resolve(finalActiveCompanyData);
+        }
+      });
+    });
+  }
+
+  parseVoucherToObjects(xmlData: string): Promise<Voucher[]> {
+    return new Promise((resolve, reject) => {
+      parseString(xmlData, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const envelope = result.ENVELOPE;
+          const voucherArray = [];
+
+          const numVouchers = envelope.GUID.length;
+          for (let i = 0; i < numVouchers; i++) {
+            const voucher: Voucher = {
+              GUID: envelope.GUID[i],
+              ALTERID: envelope.ALTERID[i],
+              DATE: envelope.DATE[i],
+              VOUCHER_TYPE: envelope.VOUCHER_TYPE[i],
+              _VOUCHER_TYPE: envelope._VOUCHER_TYPE[i],
+              VOUCHER_NUMBER: envelope.VOUCHER_NUMBER[i],
+              REFERENCE_NUMBER: envelope.REFERENCE_NUMBER[i],
+              REFERENCE_DATE: envelope.REFERENCE_DATE[i],
+              NARRATION: envelope.NARRATION[i],
+              PARTY_NAME: envelope.PARTY_NAME[i],
+              _PARTY_NAME: envelope._PARTY_NAME[i],
+              PLACE_OF_SUPPLY: envelope.PLACE_OF_SUPPLY[i],
+              IS_INVOICE: envelope.IS_INVOICE[i],
+              IS_ACCOUNTING_VOUCHER: envelope.IS_ACCOUNTING_VOUCHER[i],
+              IS_INVENTORY_VOUCHER: envelope.IS_INVENTORY_VOUCHER[i],
+              IS_ORDER_VOUCHER: envelope.IS_ORDER_VOUCHER[i],
+            };
+            voucherArray.push(voucher);
+          }
+
+          resolve(voucherArray);
+        }
+      });
+    });
   }
 }

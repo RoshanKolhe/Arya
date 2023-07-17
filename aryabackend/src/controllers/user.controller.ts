@@ -27,6 +27,8 @@ import generateOtpTemplate from '../templates/otp.template';
 import SITE_SETTINGS from '../utils/config';
 import {EmailManagerBindings} from '../keys';
 import {EmailManager} from '../services/email.service';
+import {ACTIVE_COMPANY_TALLY_XML} from '../helpers/getActiveCompanyTallyXml';
+import {TallyHttpCallService} from '../services/tally-http-call';
 
 export class UserController {
   constructor(
@@ -40,6 +42,8 @@ export class UserController {
     public userService: MyUserService,
     @inject('service.jwt.service')
     public jwtService: JWTService,
+    @inject('service.tally.service')
+    public tallyPostService: TallyHttpCallService,
   ) {}
 
   @post('/register', {
@@ -294,5 +298,24 @@ export class UserController {
 
   addMinutesToDate(date: any, minutes: any) {
     return new Date(date.getTime() + minutes * 60000);
+  }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
+  @post('/api/getActiveCompany')
+  async syncProducts(): Promise<any> {
+    try {
+      const tallyXml = ACTIVE_COMPANY_TALLY_XML();
+      const res: any = await this.tallyPostService.postTallyXML(tallyXml);
+      const parsedXmlData = await this.tallyPostService.parseActiveCompany(
+        res,
+      );
+      return parsedXmlData;
+    } catch (error) {
+      console.log(error);
+      throw new HttpErrors.PreconditionFailed(error.message);
+    }
   }
 }
