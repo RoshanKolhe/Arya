@@ -184,7 +184,7 @@ export class ProductController {
     description: 'Product model instance',
     content: {'application/json': {schema: getModelSchemaRef(Product)}},
   })
-  async findById(@param.path.number('id') id: number): Promise<any> {
+  async findById(@param.path.number('id') id: string): Promise<any> {
     const product = await this.productRepository.findById(id);
     if (!product) {
       throw new HttpErrors.NotFound('Product not found');
@@ -288,7 +288,7 @@ export class ProductController {
   @response(204, {
     description: 'Product DELETE success',
   })
-  async deleteById(@param.path.number('id') id: number): Promise<void> {
-    await this.productRepository.deleteById(id);
+  async deleteById(@param.path.number('id') guid: string): Promise<void> {
+    await this.productRepository.deleteById(guid);
   }
 }

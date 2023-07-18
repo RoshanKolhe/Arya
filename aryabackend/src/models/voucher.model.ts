@@ -12,16 +12,14 @@ export class Voucher extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
-  guid: string;
+  guid?: string;
 
   @property({
     type: 'string',
-    required: true,
     default: '',
   })
-  alterid: string;
+  alterid?: string;
 
   @property({
     type: 'string',
@@ -42,9 +40,8 @@ export class Voucher extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
-  voucher_number: string;
+  voucher_number?: string;
 
   @property({
     type: 'string',
@@ -59,7 +56,7 @@ export class Voucher extends Entity {
   @property({
     type: 'string',
   })
-  narration: string;
+  narration?: string;
 
   @property({
     type: 'string',
@@ -98,6 +95,21 @@ export class Voucher extends Entity {
     type: 'boolean',
   })
   is_order_voucher?: boolean;
+
+  @property({
+    type: 'boolean',
+  })
+  is_synced: boolean;
+
+  @property({
+    type: 'date',
+  })
+  createdAt?: Date;
+
+  @property({
+    type: 'date',
+  })
+  updatedAt?: Date;
 
   constructor(data?: Partial<Voucher>) {
     super(data);

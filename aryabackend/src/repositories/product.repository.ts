@@ -6,11 +6,11 @@ import {TimeStampRepositoryMixin} from '../mixins/timestamp-repository-mixin';
 
 export class ProductRepository extends TimeStampRepositoryMixin<
   Product,
-  typeof Product.prototype.id,
+  typeof Product.prototype.guid,
   Constructor<
     DefaultCrudRepository<
       Product,
-      typeof Product.prototype.id,
+      typeof Product.prototype.guid,
       ProductRelations
     >
   >

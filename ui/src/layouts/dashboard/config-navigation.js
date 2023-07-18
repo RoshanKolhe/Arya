@@ -119,6 +119,15 @@ export function useNavData() {
               // { title: t('create'), path: paths.dashboard.product.new },
             ],
           },
+          {
+            title: t('Vouchers'),
+            path: paths.dashboard.voucher.root,
+            icon: ICONS.invoice,
+            children: [
+              { title: t('list'), path: paths.dashboard.voucher.root },
+              { title: t('create'), path: paths.dashboard.voucher.new },
+            ],
+          },
         ],
       },
     ],

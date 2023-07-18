@@ -72,4 +72,9 @@ export const endpoints = {
     details: (id) => `/api/users/${id}`,
     search: '/api/user/search',
   },
+  voucher: {
+    list: '/api/vouchers/list',
+    details: (id) => `/api/vouchers/${id}`,
+    search: '/api/vouchers/search',
+  },
 };
