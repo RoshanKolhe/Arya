@@ -62,6 +62,11 @@ export class VoucherProduct extends Entity {
 
   @property({
     type: 'string',
+  })
+  notes?: string;
+
+  @property({
+    type: 'string',
     required: true,
   })
   _godown: string;

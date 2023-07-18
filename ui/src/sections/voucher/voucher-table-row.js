@@ -2,91 +2,177 @@ import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 // @mui
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
+import Collapse from '@mui/material/Collapse';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import LinearProgress from '@mui/material/LinearProgress';
-// utils
-import { fCurrency } from 'src/utils/format-number';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
+// utils
+import { fCurrency } from 'src/utils/format-number';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-import { Typography } from '@mui/material';
+import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-export default function UserTableRow({
-  row,
-  selected,
-  onSelectRow,
-  onDeleteRow,
-  onEditRow,
-  onApproveUser,
-}) {
-  const { date, party_name, createdAt, is_synced } = row;
+export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow, onDeleteRow }) {
+  const { items, status, orderNumber, createdAt, customer, totalQuantity, subTotal } = row;
 
   const confirm = useBoolean();
 
+  const collapse = useBoolean();
+
   const popover = usePopover();
+
+  const renderPrimary = (
+    <TableRow hover selected={selected}>
+      <TableCell padding="checkbox">
+        <Checkbox checked={selected} onClick={onSelectRow} />
+      </TableCell>
+
+      <TableCell>
+        <Box
+          onClick={onViewRow}
+          sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+          }}
+        >
+          {orderNumber}
+        </Box>
+      </TableCell>
+
+      <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar alt={customer.name} src={customer.avatarUrl} sx={{ mr: 2 }} />
+
+        <ListItemText
+          primary={customer.name}
+          secondary={customer.email}
+          primaryTypographyProps={{ typography: 'body2' }}
+          secondaryTypographyProps={{ component: 'span', color: 'text.disabled' }}
+        />
+      </TableCell>
+
+      <TableCell>
+        <ListItemText
+          primary={format(new Date(createdAt), 'dd MMM yyyy')}
+          secondary={format(new Date(createdAt), 'p')}
+          primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+          secondaryTypographyProps={{
+            mt: 0.5,
+            component: 'span',
+            typography: 'caption',
+          }}
+        />
+      </TableCell>
+
+      <TableCell align="center"> {totalQuantity} </TableCell>
+
+      <TableCell> {fCurrency(subTotal)} </TableCell>
+
+      <TableCell>
+        <Label
+          variant="soft"
+          color={
+            (status === 'completed' && 'success') ||
+            (status === 'pending' && 'warning') ||
+            (status === 'cancelled' && 'error') ||
+            'default'
+          }
+        >
+          {status}
+        </Label>
+      </TableCell>
+
+      <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
+        <IconButton
+          color={collapse.value ? 'inherit' : 'default'}
+          onClick={collapse.onToggle}
+          sx={{
+            ...(collapse.value && {
+              bgcolor: 'action.hover',
+            }),
+          }}
+        >
+          <Iconify icon="eva:arrow-ios-downward-fill" />
+        </IconButton>
+
+        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <Iconify icon="eva:more-vertical-fill" />
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+
+  const renderSecondary = (
+    <TableRow>
+      <TableCell sx={{ p: 0, border: 'none' }} colSpan={8}>
+        <Collapse
+          in={collapse.value}
+          timeout="auto"
+          unmountOnExit
+          sx={{ bgcolor: 'background.neutral' }}
+        >
+          <Stack component={Paper} sx={{ m: 1.5 }}>
+            {items.map((item) => (
+              <Stack
+                key={item.id}
+                direction="row"
+                alignItems="center"
+                sx={{
+                  p: (theme) => theme.spacing(1.5, 2, 1.5, 1.5),
+                  '&:not(:last-of-type)': {
+                    borderBottom: (theme) => `solid 2px ${theme.palette.background.neutral}`,
+                  },
+                }}
+              >
+                <Avatar
+                  src={item.coverUrl}
+                  variant="rounded"
+                  sx={{ width: 48, height: 48, mr: 2 }}
+                />
+
+                <ListItemText
+                  primary={item.name}
+                  secondary={item.sku}
+                  primaryTypographyProps={{
+                    typography: 'body2',
+                  }}
+                  secondaryTypographyProps={{
+                    component: 'span',
+                    color: 'text.disabled',
+                    mt: 0.5,
+                  }}
+                />
+
+                <Box>x{item.quantity}</Box>
+
+                <Box sx={{ width: 110, textAlign: 'right' }}>{fCurrency(item.price)}</Box>
+              </Stack>
+            ))}
+          </Stack>
+        </Collapse>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <>
-      <TableRow hover selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox checked={selected} onClick={onSelectRow} />
-        </TableCell>
+      {renderPrimary}
 
-        <TableCell>
-          <ListItemText
-            primary={format(new Date(date), 'dd MMM yyyy')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
-          />
-        </TableCell>
-
-        <TableCell>
-          <Typography variant="subtitle">{party_name}</Typography>
-        </TableCell>
-
-        <TableCell>
-          <Label color={!is_synced ? 'error' : 'success'}>
-            {!is_synced ? 'Pending' : 'Synced'}
-          </Label>
-        </TableCell>
-
-        <TableCell>
-          <ListItemText
-            primary={format(new Date(createdAt), 'dd MMM yyyy')}
-            secondary={format(new Date(createdAt), 'p')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
-          />
-        </TableCell>
-
-        <TableCell align="right">
-          <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>
-      </TableRow>
+      {renderSecondary}
 
       <CustomPopover
         open={popover.open}
@@ -94,26 +180,6 @@ export default function UserTableRow({
         arrow="right-top"
         sx={{ width: 140 }}
       >
-        <MenuItem
-          onClick={() => {
-            onEditRow();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:pen-bold" />
-          Edit
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            onApproveUser(row.id, !row.isActive);
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="material-symbols:block" />
-          {!row.isActive ? 'Unblock' : 'Block'}
-        </MenuItem>
-
         <MenuItem
           onClick={() => {
             confirm.onTrue();
@@ -124,6 +190,16 @@ export default function UserTableRow({
           <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
         </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            onViewRow();
+            popover.onClose();
+          }}
+        >
+          <Iconify icon="solar:eye-bold" />
+          View
+        </MenuItem>
       </CustomPopover>
 
       <ConfirmDialog
@@ -132,13 +208,7 @@ export default function UserTableRow({
         title="Delete"
         content="Are you sure want to delete?"
         action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              onDeleteRow(confirm);
-            }}
-          >
+          <Button variant="contained" color="error" onClick={onDeleteRow}>
             Delete
           </Button>
         }
@@ -147,11 +217,10 @@ export default function UserTableRow({
   );
 }
 
-UserTableRow.propTypes = {
+VoucherTableRow.propTypes = {
   onDeleteRow: PropTypes.func,
-  onEditRow: PropTypes.func,
   onSelectRow: PropTypes.func,
-  onApproveUser: PropTypes.func,
+  onViewRow: PropTypes.func,
   row: PropTypes.object,
   selected: PropTypes.bool,
 };

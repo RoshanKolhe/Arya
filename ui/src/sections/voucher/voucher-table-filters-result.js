@@ -5,12 +5,14 @@ import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+
 // components
 import Iconify from 'src/components/iconify';
+import { shortDateLabel } from 'src/components/custom-date-range-picker';
 
 // ----------------------------------------------------------------------
 
-export default function UserTableFiltersResult({
+export default function VoucherTableFiltersResult({
   filters,
   onFilters,
   //
@@ -19,14 +21,15 @@ export default function UserTableFiltersResult({
   results,
   ...other
 }) {
-  const handleRemoveStock = (inputValue) => {
-    const newValue = filters.stock.filter((item) => item !== inputValue);
-    onFilters('stock', newValue);
+  const shortLabel = shortDateLabel(filters.startDate, filters.endDate);
+
+  const handleRemoveStatus = () => {
+    onFilters('status', 'all');
   };
 
-  const handleRemovePublish = (inputValue) => {
-    const newValue = filters.publish.filter((item) => item !== inputValue);
-    onFilters('publish', newValue);
+  const handleRemoveDate = () => {
+    onFilters('startDate', null);
+    onFilters('endDate', null);
   };
 
   return (
@@ -39,24 +42,15 @@ export default function UserTableFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
-        {!!filters.stock.length && (
-          <Block label="Stock:">
-            {filters.stock.map((item) => (
-              <Chip key={item} label={item} size="small" onDelete={() => handleRemoveStock(item)} />
-            ))}
+        {filters.status !== 'all' && (
+          <Block label="Status:">
+            <Chip size="small" label={filters.status} onDelete={handleRemoveStatus} />
           </Block>
         )}
 
-        {!!filters.publish.length && (
-          <Block label="Publish:">
-            {filters.publish.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                size="small"
-                onDelete={() => handleRemovePublish(item)}
-              />
-            ))}
+        {filters.startDate && filters.endDate && (
+          <Block label="Date:">
+            <Chip size="small" label={shortLabel} onDelete={handleRemoveDate} />
           </Block>
         )}
 
@@ -72,7 +66,7 @@ export default function UserTableFiltersResult({
   );
 }
 
-UserTableFiltersResult.propTypes = {
+VoucherTableFiltersResult.propTypes = {
   filters: PropTypes.object,
   onFilters: PropTypes.func,
   onResetFilters: PropTypes.func,

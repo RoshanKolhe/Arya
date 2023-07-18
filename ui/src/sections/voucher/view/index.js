@@ -1,3 +1,2 @@
-export { default as UserListView } from './voucher-list-view';
-export { default as UserCreateView } from './user-create-view';
-export { default as UserEditView } from './user-edit-view';
+export { default as OrderListView } from './order-list-view';
+export { default as OrderDetailsView } from './order-details-view';

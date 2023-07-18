@@ -184,6 +184,7 @@ export class VoucherController {
           discount: product.discount,
           godown: 'Main Location',
           _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
+          notes: product.notes,
         };
       });
       await this.voucherProductRepository.createAll(voucherProducts);
@@ -230,6 +231,7 @@ export class VoucherController {
                 discount: voucherProduct?.discount,
                 godown: voucherProduct?.godown,
                 _godown: voucherProduct?._godown,
+                notes: voucherProduct?.notes,
               };
             }),
           );

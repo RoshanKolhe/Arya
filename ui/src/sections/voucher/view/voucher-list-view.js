@@ -1,7 +1,8 @@
-/* eslint-disable no-unreachable */
-import isEqual from 'lodash/isEqual';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 // @mui
+import { alpha } from '@mui/material/styles';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -13,79 +14,80 @@ import TableContainer from '@mui/material/TableContainer';
 // routes
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
-import { RouterLink } from 'src/routes/components';
+// _mock
+import { _orders, ORDER_STATUS_OPTIONS } from 'src/_mock';
+// utils
+import { fTimestamp } from 'src/utils/format-time';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// _mock
-import { PRODUCT_STOCK_OPTIONS } from 'src/_mock';
-// api
 // components
+import Label from 'src/components/label';
+import Iconify from 'src/components/iconify';
+import Scrollbar from 'src/components/scrollbar';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
+import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import {
   useTable,
   getComparator,
   emptyRows,
   TableNoData,
-  TableSkeleton,
   TableEmptyRows,
   TableHeadCustom,
   TableSelectedAction,
   TablePaginationCustom,
 } from 'src/components/table';
-import Iconify from 'src/components/iconify';
-import Scrollbar from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
-import axiosInstance, { endpoints } from 'src/utils/axios';
-import { useSnackbar } from 'src/components/snackbar';
-import { useGetLedgers } from 'src/api/ledger';
-import { useGetUsers } from 'src/api/user';
-import { useGetVouchers } from 'src/api/voucher';
-import UserTableRow from '../voucher-table-row';
-import UserTableToolbar from '../voucher-table-toolbar';
+import OrderTableRow from '../voucher-table-row';
+import OrderTableToolbar from '../voucher-table-toolbar';
+import OrderTableFiltersResult from '../voucher-table-filters-result';
 
 // ----------------------------------------------------------------------
 
+const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...ORDER_STATUS_OPTIONS];
+
 const TABLE_HEAD = [
-  { id: 'date', label: 'Date' },
-  { id: 'party_name', label: 'Party Name' },
-  { id: 'is_synced', label: 'Synced', width: 160 },
-  { id: 'createdAt', label: 'Create At', width: 160 },
-  { id: '', width: 80 },
+  { id: 'orderNumber', label: 'Order', width: 116 },
+  { id: 'name', label: 'Customer' },
+  { id: 'createdAt', label: 'Date', width: 140 },
+  { id: 'totalQuantity', label: 'Items', width: 120, align: 'center' },
+  { id: 'totalAmount', label: 'Price', width: 140 },
+  { id: 'status', label: 'Status', width: 110 },
+  { id: '', width: 88 },
 ];
 
 const defaultFilters = {
   name: '',
+  status: 'all',
+  startDate: null,
+  endDate: null,
 };
 
 // ----------------------------------------------------------------------
 
 export default function VoucherListView() {
-  const router = useRouter();
-
-  const table = useTable();
-
-  const { enqueueSnackbar } = useSnackbar();
+  const table = useTable({ defaultOrderBy: 'orderNumber' });
 
   const settings = useSettingsContext();
 
-  const [tableData, setTableData] = useState([]);
-
-  const [filters, setFilters] = useState(defaultFilters);
-
-  const { vouchers, vouchersLoading, vouchersEmpty, refreshVouchers } = useGetVouchers();
+  const router = useRouter();
 
   const confirm = useBoolean();
 
-  useEffect(() => {
-    setTableData(vouchers);
-  }, [vouchers]);
+  const [tableData, setTableData] = useState(_orders);
+
+  const [filters, setFilters] = useState(defaultFilters);
+
+  const dateError =
+    filters.startDate && filters.endDate
+      ? filters.startDate.getTime() > filters.endDate.getTime()
+      : false;
 
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters,
+    dateError,
   });
 
   const dataInPage = dataFiltered.slice(
@@ -93,11 +95,12 @@ export default function VoucherListView() {
     table.page * table.rowsPerPage + table.rowsPerPage
   );
 
-  const denseHeight = table.dense ? 60 : 80;
+  const denseHeight = table.dense ? 52 : 72;
 
-  const canReset = !isEqual(defaultFilters, filters);
+  const canReset =
+    !!filters.name || filters.status !== 'all' || (!!filters.startDate && !!filters.endDate);
 
-  const notFound = (!dataFiltered.length && canReset) || vouchersEmpty;
+  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleFilters = useCallback(
     (name, value) => {
@@ -110,56 +113,14 @@ export default function VoucherListView() {
     [table]
   );
 
-  const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.voucher.edit(id));
-    },
-    [router]
-  );
-
   const handleDeleteRow = useCallback(
-    async (id, deleteConfirm) => {
-      await axiosInstance
-        .delete(`/api/brands/${id}`)
-        .then((res) => {
-          enqueueSnackbar('Delete Success!');
-          refreshVouchers();
-        })
-        .catch((err) => {
-          console.error(err);
-          enqueueSnackbar(
-            err.response.data.error.message
-              ? err.response.data.error.message
-              : 'something went wrong!',
-            { variant: 'error' }
-          );
-        });
-      deleteConfirm.onFalse();
-    },
-    [enqueueSnackbar, refreshVouchers]
-  );
+    (id) => {
+      const deleteRow = tableData.filter((row) => row.id !== id);
+      setTableData(deleteRow);
 
-  const handleApproveOrBlock = useCallback(
-    async (id, isActive) => {
-      await axiosInstance
-        .patch(`/api/users/${id}`, {
-          isActive,
-        })
-        .then((res) => {
-          enqueueSnackbar(!isActive ? 'Block success' : 'Unblock success');
-          refreshVouchers();
-        })
-        .catch((err) => {
-          console.error(err);
-          enqueueSnackbar(
-            err.response.data.error.message
-              ? err.response.data.error.message
-              : 'something went wrong!',
-            { variant: 'error' }
-          );
-        });
+      table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [enqueueSnackbar, refreshVouchers]
+    [dataInPage.length, table, tableData]
   );
 
   const handleDeleteRows = useCallback(() => {
@@ -173,34 +134,108 @@ export default function VoucherListView() {
     });
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
+  const handleResetFilters = useCallback(() => {
+    setFilters(defaultFilters);
+  }, []);
+
+  const handleViewRow = useCallback(
+    (id) => {
+      router.push(paths.dashboard.order.details(id));
+    },
+    [router]
+  );
+
+  const handleFilterStatus = useCallback(
+    (event, newValue) => {
+      handleFilters('status', newValue);
+    },
+    [handleFilters]
+  );
+
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <CustomBreadcrumbs
           heading="List"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            {
+              name: 'Dashboard',
+              href: paths.dashboard.root,
+            },
             {
               name: 'Voucher',
               href: paths.dashboard.voucher.root,
             },
             { name: 'List' },
           ]}
-          action={
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.voucher.new}
-              variant="contained"
-              startIcon={<Iconify icon="material-symbols:add" />}
-            >
-              New Voucher
-            </Button>
-          }
-          sx={{ mb: { xs: 3, md: 5 } }}
+          sx={{
+            mb: { xs: 3, md: 5 },
+          }}
         />
 
         <Card>
-          <UserTableToolbar filters={filters} onFilters={handleFilters} />
+          <Tabs
+            value={filters.status}
+            onChange={handleFilterStatus}
+            sx={{
+              px: 2.5,
+              boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
+            }}
+          >
+            {STATUS_OPTIONS.map((tab) => (
+              <Tab
+                key={tab.value}
+                iconPosition="end"
+                value={tab.value}
+                label={tab.label}
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
+                    }
+                    color={
+                      (tab.value === 'completed' && 'success') ||
+                      (tab.value === 'pending' && 'warning') ||
+                      (tab.value === 'cancelled' && 'error') ||
+                      'default'
+                    }
+                  >
+                    {tab.value === 'all' && _orders.length}
+                    {tab.value === 'completed' &&
+                      _orders.filter((order) => order.status === 'completed').length}
+
+                    {tab.value === 'pending' &&
+                      _orders.filter((order) => order.status === 'pending').length}
+                    {tab.value === 'cancelled' &&
+                      _orders.filter((order) => order.status === 'cancelled').length}
+                    {tab.value === 'refunded' &&
+                      _orders.filter((order) => order.status === 'refunded').length}
+                  </Label>
+                }
+              />
+            ))}
+          </Tabs>
+
+          <OrderTableToolbar
+            filters={filters}
+            onFilters={handleFilters}
+            //
+            canReset={canReset}
+            onResetFilters={handleResetFilters}
+          />
+
+          {canReset && (
+            <OrderTableFiltersResult
+              filters={filters}
+              onFilters={handleFilters}
+              //
+              onResetFilters={handleResetFilters}
+              //
+              results={dataFiltered.length}
+              sx={{ p: 2.5, pt: 0 }}
+            />
+          )}
+
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <TableSelectedAction
               dense={table.dense}
@@ -239,32 +274,21 @@ export default function VoucherListView() {
                 />
 
                 <TableBody>
-                  {vouchersLoading ? (
-                    [...Array(table.rowsPerPage)].map((i, index) => (
-                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
-                    ))
-                  ) : (
-                    <>
-                      {dataFiltered
-                        .slice(
-                          table.page * table.rowsPerPage,
-                          table.page * table.rowsPerPage + table.rowsPerPage
-                        )
-                        .map((row) => (
-                          <UserTableRow
-                            key={row.id}
-                            row={row}
-                            selected={table.selected.includes(row.id)}
-                            onSelectRow={() => table.onSelectRow(row.id)}
-                            onDeleteRow={(deleteConfirm) => handleDeleteRow(row.id, deleteConfirm)}
-                            onEditRow={() => {
-                              handleEditRow(row.id);
-                            }}
-                            onApproveUser={(id, isActive) => handleApproveOrBlock(id, isActive)}
-                          />
-                        ))}
-                    </>
-                  )}
+                  {dataFiltered
+                    .slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <OrderTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id)}
+                        onSelectRow={() => table.onSelectRow(row.id)}
+                        onDeleteRow={() => handleDeleteRow(row.id)}
+                        onViewRow={() => handleViewRow(row.id)}
+                      />
+                    ))}
 
                   <TableEmptyRows
                     height={denseHeight}
@@ -318,8 +342,8 @@ export default function VoucherListView() {
 
 // ----------------------------------------------------------------------
 
-function applyFilter({ inputData, comparator, filters }) {
-  const { name } = filters;
+function applyFilter({ inputData, comparator, filters, dateError }) {
+  const { status, name, startDate, endDate } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -333,8 +357,26 @@ function applyFilter({ inputData, comparator, filters }) {
 
   if (name) {
     inputData = inputData.filter(
-      (brand) => brand.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (order) =>
+        order.orderNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        order.customer.name.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        order.customer.email.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
+
+  if (status !== 'all') {
+    inputData = inputData.filter((order) => order.status === status);
+  }
+
+  if (!dateError) {
+    if (startDate && endDate) {
+      inputData = inputData.filter(
+        (order) =>
+          fTimestamp(order.createdAt) >= fTimestamp(startDate) &&
+          fTimestamp(order.createdAt) <= fTimestamp(endDate)
+      );
+    }
+  }
+
   return inputData;
 }

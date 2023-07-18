@@ -1,28 +1,46 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import PropTypes from 'prop-types';
 import { useCallback } from 'react';
 // @mui
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import { DatePicker } from '@mui/x-date-pickers';
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
 import IconButton from '@mui/material/IconButton';
-import FormControl from '@mui/material/FormControl';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
-import Select from '@mui/material/Select';
 // components
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-export default function UserTableToolbar({ filters, onFilters }) {
+export default function VoucherTableToolbar({
+  filters,
+  onFilters,
+  //
+  canReset,
+  onResetFilters,
+}) {
   const popover = usePopover();
 
   const handleFilterName = useCallback(
     (event) => {
       onFilters('name', event.target.value);
+    },
+    [onFilters]
+  );
+
+  const handleFilterStartDate = useCallback(
+    (newValue) => {
+      onFilters('startDate', newValue);
+    },
+    [onFilters]
+  );
+
+  const handleFilterEndDate = useCallback(
+    (newValue) => {
+      onFilters('endDate', newValue);
     },
     [onFilters]
   );
@@ -41,12 +59,36 @@ export default function UserTableToolbar({ filters, onFilters }) {
           pr: { xs: 2.5, md: 1 },
         }}
       >
+        <DatePicker
+          label="Start date"
+          value={filters.startDate}
+          onChange={handleFilterStartDate}
+          slotProps={{
+            textField: {
+              fullWidth: true,
+            },
+          }}
+          sx={{
+            maxWidth: { md: 200 },
+          }}
+        />
+
+        <DatePicker
+          label="End date"
+          value={filters.endDate}
+          onChange={handleFilterEndDate}
+          slotProps={{ textField: { fullWidth: true } }}
+          sx={{
+            maxWidth: { md: 200 },
+          }}
+        />
+
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
             value={filters.name}
             onChange={handleFilterName}
-            placeholder="Search..."
+            placeholder="Search customer or order number..."
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -60,6 +102,17 @@ export default function UserTableToolbar({ filters, onFilters }) {
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </Stack>
+
+        {canReset && (
+          <Button
+            color="error"
+            sx={{ flexShrink: 0 }}
+            onClick={onResetFilters}
+            startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+          >
+            Clear
+          </Button>
+        )}
       </Stack>
 
       <CustomPopover
@@ -99,7 +152,9 @@ export default function UserTableToolbar({ filters, onFilters }) {
   );
 }
 
-UserTableToolbar.propTypes = {
+VoucherTableToolbar.propTypes = {
+  canReset: PropTypes.bool,
   filters: PropTypes.object,
   onFilters: PropTypes.func,
+  onResetFilters: PropTypes.func,
 };
