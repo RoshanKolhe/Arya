@@ -97,6 +97,22 @@ export class Voucher extends Entity {
   is_order_voucher?: boolean;
 
   @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  totalAmount: number;
+
+  @property({
+    type: 'number',
+    required: true,
+  })
+  totalQuantity: number;
+
+  @property({
     type: 'boolean',
   })
   is_synced: boolean;

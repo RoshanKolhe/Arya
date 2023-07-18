@@ -170,6 +170,8 @@ export class VoucherController {
         is_accounting_voucher: true,
         is_inventory_voucher: false,
         is_order_voucher: false,
+        totalAmount: voucher.totalPrice,
+        totalQuantity: voucher.totalQuantity,
       };
 
       const newVoucher = await this.voucherRepository.create(voucherCreateData);

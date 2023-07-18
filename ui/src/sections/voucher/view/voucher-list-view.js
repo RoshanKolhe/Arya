@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -36,23 +36,24 @@ import {
   TableHeadCustom,
   TableSelectedAction,
   TablePaginationCustom,
+  TableSkeleton,
 } from 'src/components/table';
 //
-import OrderTableRow from '../voucher-table-row';
-import OrderTableToolbar from '../voucher-table-toolbar';
-import OrderTableFiltersResult from '../voucher-table-filters-result';
+import { useGetVouchers } from 'src/api/voucher';
+import VoucherTableToolbar from '../voucher-table-toolbar';
+import VoucherTableFiltersResult from '../voucher-table-filters-result';
+import VoucherTableRow from '../voucher-table-row';
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...ORDER_STATUS_OPTIONS];
+const STATUS_OPTIONS = [{ value: 'all', label: 'All' }];
 
 const TABLE_HEAD = [
-  { id: 'orderNumber', label: 'Order', width: 116 },
+  { id: 'id', label: 'Order', width: 116 },
   { id: 'name', label: 'Customer' },
   { id: 'createdAt', label: 'Date', width: 140 },
-  { id: 'totalQuantity', label: 'Items', width: 120, align: 'center' },
   { id: 'totalAmount', label: 'Price', width: 140 },
-  { id: 'status', label: 'Status', width: 110 },
+  { id: 'is_synced', label: 'Synced', width: 110 },
   { id: '', width: 88 },
 ];
 
@@ -74,7 +75,9 @@ export default function VoucherListView() {
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_orders);
+  const [tableData, setTableData] = useState([]);
+
+  const { vouchers, vouchersLoading, vouchersEmpty, refreshVouchers } = useGetVouchers();
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -152,6 +155,12 @@ export default function VoucherListView() {
     [handleFilters]
   );
 
+  useEffect(() => {
+    if (vouchers.length) {
+      setTableData(vouchers);
+    }
+  }, [vouchers]);
+
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -216,7 +225,7 @@ export default function VoucherListView() {
             ))}
           </Tabs>
 
-          <OrderTableToolbar
+          <VoucherTableToolbar
             filters={filters}
             onFilters={handleFilters}
             //
@@ -225,7 +234,7 @@ export default function VoucherListView() {
           />
 
           {canReset && (
-            <OrderTableFiltersResult
+            <VoucherTableFiltersResult
               filters={filters}
               onFilters={handleFilters}
               //
@@ -274,21 +283,29 @@ export default function VoucherListView() {
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <OrderTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                      />
-                    ))}
+                  {vouchersLoading ? (
+                    [...Array(table.rowsPerPage)].map((i, index) => (
+                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
+                    ))
+                  ) : (
+                    <>
+                      {dataFiltered
+                        .slice(
+                          table.page * table.rowsPerPage,
+                          table.page * table.rowsPerPage + table.rowsPerPage
+                        )
+                        .map((row) => (
+                          <VoucherTableRow
+                            key={row.id}
+                            row={row}
+                            selected={table.selected.includes(row.id)}
+                            onSelectRow={() => table.onSelectRow(row.id)}
+                            onDeleteRow={() => handleDeleteRow(row.id)}
+                            onViewRow={() => handleViewRow(row.id)}
+                          />
+                        ))}
+                    </>
+                  )}
 
                   <TableEmptyRows
                     height={denseHeight}

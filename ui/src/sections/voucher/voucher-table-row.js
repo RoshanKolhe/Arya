@@ -26,8 +26,9 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 // ----------------------------------------------------------------------
 
 export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow, onDeleteRow }) {
-  const { items, status, orderNumber, createdAt, customer, totalQuantity, subTotal } = row;
+  const { party_name, products, status, id, createdAt, is_synced, totalQuantity, subTotal } = row;
 
+  console.log(row);
   const confirm = useBoolean();
 
   const collapse = useBoolean();
@@ -50,16 +51,13 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
             },
           }}
         >
-          {orderNumber}
+          {id}
         </Box>
       </TableCell>
 
       <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar alt={customer.name} src={customer.avatarUrl} sx={{ mr: 2 }} />
-
         <ListItemText
-          primary={customer.name}
-          secondary={customer.email}
+          primary={party_name}
           primaryTypographyProps={{ typography: 'body2' }}
           secondaryTypographyProps={{ component: 'span', color: 'text.disabled' }}
         />
@@ -78,21 +76,16 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
         />
       </TableCell>
 
-      <TableCell align="center"> {totalQuantity} </TableCell>
-
       <TableCell> {fCurrency(subTotal)} </TableCell>
 
       <TableCell>
         <Label
           variant="soft"
           color={
-            (status === 'completed' && 'success') ||
-            (status === 'pending' && 'warning') ||
-            (status === 'cancelled' && 'error') ||
-            'default'
+            (is_synced === true && 'success') || (is_synced === false && 'warning') || 'default'
           }
         >
-          {status}
+          {(is_synced === true && 'synced') || (is_synced === false && 'not synced') || ''}
         </Label>
       </TableCell>
 
@@ -126,7 +119,7 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
           sx={{ bgcolor: 'background.neutral' }}
         >
           <Stack component={Paper} sx={{ m: 1.5 }}>
-            {items.map((item) => (
+            {products.map((item) => (
               <Stack
                 key={item.id}
                 direction="row"
@@ -138,15 +131,8 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
                   },
                 }}
               >
-                <Avatar
-                  src={item.coverUrl}
-                  variant="rounded"
-                  sx={{ width: 48, height: 48, mr: 2 }}
-                />
-
                 <ListItemText
-                  primary={item.name}
-                  secondary={item.sku}
+                  primary={item.productName}
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
@@ -159,7 +145,7 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
 
                 <Box>x{item.quantity}</Box>
 
-                <Box sx={{ width: 110, textAlign: 'right' }}>{fCurrency(item.price)}</Box>
+                <Box sx={{ width: 110, textAlign: 'right' }}>{fCurrency(item.rate)}</Box>
               </Stack>
             ))}
           </Stack>
