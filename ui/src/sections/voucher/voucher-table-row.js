@@ -26,9 +26,8 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 // ----------------------------------------------------------------------
 
 export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow, onDeleteRow }) {
-  const { party_name, products, status, id, createdAt, is_synced, totalQuantity, subTotal } = row;
+  const { party_name, products, status, id, createdAt, is_synced, totalQuantity, totalAmount } = row;
 
-  console.log(row);
   const confirm = useBoolean();
 
   const collapse = useBoolean();
@@ -75,8 +74,8 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
           }}
         />
       </TableCell>
-
-      <TableCell> {fCurrency(subTotal)} </TableCell>
+      <TableCell align="center"> {totalQuantity} </TableCell>
+      <TableCell> {fCurrency(totalAmount)} </TableCell>
 
       <TableCell>
         <Label

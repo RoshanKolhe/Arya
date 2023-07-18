@@ -48,7 +48,7 @@ export const paths = {
     voucher: {
       root: `${ROOTS.DASHBOARD}/voucher`,
       new: `${ROOTS.DASHBOARD}/voucher/new`,
-      edit: (id) => `${ROOTS.DASHBOARD}/voucher/${id}/edit`,
+      edit: (id) => `${ROOTS.DASHBOARD}/voucher/${id}`,
     },
   },
 };

@@ -52,13 +52,14 @@ const TABLE_HEAD = [
   { id: 'id', label: 'Order', width: 116 },
   { id: 'name', label: 'Customer' },
   { id: 'createdAt', label: 'Date', width: 140 },
+  { id: 'totalQuantity', label: 'Quantity', width: 140 },
   { id: 'totalAmount', label: 'Price', width: 140 },
   { id: 'is_synced', label: 'Synced', width: 110 },
   { id: '', width: 88 },
 ];
 
 const defaultFilters = {
-  name: '',
+  party_name: '',
   status: 'all',
   startDate: null,
   endDate: null,
@@ -106,11 +107,11 @@ export default function VoucherListView() {
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleFilters = useCallback(
-    (name, value) => {
+    (party_name, value) => {
       table.onResetPage();
       setFilters((prevState) => ({
         ...prevState,
-        [name]: value,
+        [party_name]: value,
       }));
     },
     [table]
@@ -143,7 +144,7 @@ export default function VoucherListView() {
 
   const handleViewRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.order.details(id));
+      router.push(paths.dashboard.voucher.edit(id));
     },
     [router]
   );
@@ -375,9 +376,8 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   if (name) {
     inputData = inputData.filter(
       (order) =>
-        order.orderNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        order.customer.name.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        order.customer.email.toLowerCase().indexOf(name.toLowerCase()) !== -1
+        `${order.id}`.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        order.party_name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 

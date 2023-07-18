@@ -170,6 +170,7 @@ export class VoucherController {
         is_accounting_voucher: true,
         is_inventory_voucher: false,
         is_order_voucher: false,
+        is_synced: false,
         totalAmount: voucher.totalPrice,
         totalQuantity: voucher.totalQuantity,
       };
