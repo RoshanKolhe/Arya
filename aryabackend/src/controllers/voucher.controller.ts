@@ -128,6 +128,8 @@ export class VoucherController {
     @requestBody({})
     voucher: any,
   ): Promise<any> {
+    const repo = new DefaultTransactionalRepository(Voucher, this.dataSource);
+    const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
     try {
       // Check if the voucher object is valid
       if (!voucher || typeof voucher !== 'object') {
@@ -176,7 +178,12 @@ export class VoucherController {
         totalQuantity: voucher.totalQuantity,
       };
 
-      const newVoucher = await this.voucherRepository.create(voucherCreateData);
+      const newVoucher = await this.voucherRepository.create(
+        voucherCreateData,
+        {
+          transaction: tx,
+        },
+      );
 
       const voucherProducts = voucher.products.map((product: any) => {
         return {
@@ -191,10 +198,14 @@ export class VoucherController {
           notes: product.notes,
         };
       });
-      await this.voucherProductRepository.createAll(voucherProducts);
-
+      await this.voucherProductRepository.createAll(voucherProducts, {
+        transaction: tx,
+      });
+      await tx.commit();
       return newVoucher;
     } catch (error) {
+      await tx.rollback();
+
       // Handle errors and return appropriate response
       console.error('Error creating voucher:', error);
       throw new Error('Failed to create voucher');
