@@ -291,4 +291,30 @@ export class ProductController {
   async deleteById(@param.path.number('id') guid: string): Promise<void> {
     await this.productRepository.deleteById(guid);
   }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
+  @get('/api/products/parents')
+  async getProductParents(
+    @param.filter(Product) filter?: Filter<Product>,
+  ): Promise<any> {
+    const products = await this.productRepository.find(filter);
+
+    // Create a Set to store unique parent values
+    const uniqueParents = new Set<string>();
+
+    // Filter out duplicates and store unique parents in the Set
+    products.forEach(product => uniqueParents.add(product.parent));
+
+    // Convert the Set back to an array
+    const uniqueParentsArray = Array.from(uniqueParents);
+
+    return uniqueParentsArray.map(parent => {
+      return {
+        parent,
+      };
+    });
+  }
 }
