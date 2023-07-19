@@ -99,7 +99,7 @@ export function useNavData() {
           // LEDGERS
 
           {
-            title: t('ledgers'),
+            title: t('Parties'),
             path: paths.dashboard.ledger.root,
             icon: ICONS.ledger,
             children: [

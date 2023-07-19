@@ -164,8 +164,8 @@ export default function LedgerListView() {
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
             {
-              name: 'Ledger',
-              href: paths.dashboard.brand.root,
+              name: 'Parties',
+              href: paths.dashboard.ledger.root,
             },
             { name: 'List' },
           ]}

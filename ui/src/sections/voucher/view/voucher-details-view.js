@@ -28,12 +28,9 @@ export default function VoucherDetailsView() {
 
   const { voucher: currentVoucher } = useGetVoucher(id);
 
-  const [voucher, setVoucher] = useState();
-
   const [status, setStatus] = useState(0);
 
   const handleChangeStatus = useCallback((newValue) => {
-    console.log(newValue);
     setStatus(newValue);
   }, []);
 

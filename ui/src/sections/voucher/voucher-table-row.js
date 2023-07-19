@@ -26,7 +26,8 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 // ----------------------------------------------------------------------
 
 export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow, onDeleteRow }) {
-  const { party_name, products, status, id, createdAt, is_synced, totalQuantity, totalAmount } = row;
+  const { party_name, products, status, id, createdAt, is_synced, totalQuantity, totalAmount } =
+    row;
 
   const confirm = useBoolean();
 
@@ -80,9 +81,7 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
       <TableCell>
         <Label
           variant="soft"
-          color={
-            (is_synced === 1 && 'success') || (is_synced === 0 && 'warning') || 'default'
-          }
+          color={(is_synced === 1 && 'success') || (is_synced === 0 && 'warning') || 'default'}
         >
           {(is_synced === 1 && 'synced') || (is_synced === 0 && 'not synced') || ''}
         </Label>
@@ -141,8 +140,8 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
                     mt: 0.5,
                   }}
                 />
-
-                <Box>x{item.quantity}</Box>
+                <Box>{item.notes}</Box>
+                <Box sx={{ width: 110, textAlign: 'right' }}>x{item.quantity}</Box>
 
                 <Box sx={{ width: 110, textAlign: 'right' }}>{fCurrency(item.rate)}</Box>
               </Stack>
