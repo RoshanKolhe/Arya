@@ -29,10 +29,10 @@ export default function VoucherDetailsItems({
     >
       <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Subtotal</Box>
-        <Box sx={{ width: 160, typography: 'subtitle2' }}>{fCurrency(subTotal) || '-'}</Box>
+        <Box sx={{ width: 160, typography: 'subtitle2' }}>{fCurrency(totalAmount) || '-'}</Box>
       </Stack>
 
-      <Stack direction="row">
+      {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Shipping</Box>
         <Box
           sx={{
@@ -42,9 +42,9 @@ export default function VoucherDetailsItems({
         >
           {shipping ? `- ${fCurrency(shipping)}` : '-'}
         </Box>
-      </Stack>
+      </Stack> */}
 
-      <Stack direction="row">
+      {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Discount</Box>
         <Box
           sx={{
@@ -54,12 +54,12 @@ export default function VoucherDetailsItems({
         >
           {discount ? `- ${fCurrency(discount)}` : '-'}
         </Box>
-      </Stack>
+      </Stack> */}
 
-      <Stack direction="row">
+      {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Taxes</Box>
         <Box sx={{ width: 160 }}>{taxes ? fCurrency(taxes) : '-'}</Box>
-      </Stack>
+      </Stack> */}
 
       <Stack direction="row" sx={{ typography: 'subtitle1' }}>
         <Box>Total</Box>
@@ -89,11 +89,8 @@ export default function VoucherDetailsItems({
                 borderBottom: (theme) => `dashed 2px ${theme.palette.background.neutral}`,
               }}
             >
-              <Avatar src={item.coverUrl} variant="rounded" sx={{ width: 48, height: 48, mr: 2 }} />
-
               <ListItemText
-                primary={item.name}
-                secondary={item.sku}
+                primary={item.productName}
                 primaryTypographyProps={{
                   typography: 'body2',
                 }}
@@ -107,7 +104,7 @@ export default function VoucherDetailsItems({
               <Box sx={{ typography: 'body2' }}>x{item.quantity}</Box>
 
               <Box sx={{ width: 110, textAlign: 'right', typography: 'subtitle2' }}>
-                {fCurrency(item.price)}
+                {fCurrency(item.rate)}
               </Box>
             </Stack>
           ))}

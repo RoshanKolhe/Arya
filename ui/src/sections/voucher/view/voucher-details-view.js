@@ -11,62 +11,65 @@ import { _orders, ORDER_STATUS_OPTIONS } from 'src/_mock';
 import { useParams } from 'src/routes/hook';
 import { useSettingsContext } from 'src/components/settings';
 //
-import OrderDetailsInfo from '../voucher-details-info';
-import OrderDetailsItems from '../voucher-details-item';
-import OrderDetailsToolbar from '../voucher-details-toolbar';
-import OrderDetailsHistory from '../order-details-history';
+import { useGetVoucher } from 'src/api/voucher';
+import VoucherDetailsInfo from '../voucher-details-info';
+import VoucherDetailsHistory from '../voucher-details-history';
+import VoucherDetailsToolbar from '../voucher-details-toolbar';
+import VoucherDetailsItems from '../voucher-details-item';
 
 // ----------------------------------------------------------------------
 
-export default function OrderDetailsView() {
+export default function VoucherDetailsView() {
   const settings = useSettingsContext();
 
   const params = useParams();
 
   const { id } = params;
 
-  const currentOrder = _orders.filter((order) => order.id === id)[0];
+  const { voucher: currentVoucher } = useGetVoucher(id);
 
-  const [status, setStatus] = useState(currentOrder.status);
+  const [voucher, setVoucher] = useState();
+
+  const [status, setStatus] = useState(0);
 
   const handleChangeStatus = useCallback((newValue) => {
+    console.log(newValue);
     setStatus(newValue);
   }, []);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-      <OrderDetailsToolbar
-        backLink={paths.dashboard.order.root}
-        orderNumber={currentOrder.orderNumber}
-        createdAt={currentOrder.createdAt}
-        status={status}
-        onChangeStatus={handleChangeStatus}
-        statusOptions={ORDER_STATUS_OPTIONS}
-      />
+      {currentVoucher && (
+        <VoucherDetailsToolbar
+          backLink={paths.dashboard.voucher.root}
+          orderNumber={currentVoucher.id || 0}
+          createdAt={currentVoucher.createdAt}
+          status={status}
+          onChangeStatus={handleChangeStatus}
+          statusOptions={ORDER_STATUS_OPTIONS}
+        />
+      )}
 
       <Grid container spacing={3}>
         <Grid xs={12} md={8}>
           <Stack spacing={3} direction={{ xs: 'column-reverse', md: 'column' }}>
-            <OrderDetailsItems
-              items={currentOrder.items}
-              taxes={currentOrder.taxes}
-              shipping={currentOrder.shipping}
-              discount={currentOrder.discount}
-              subTotal={currentOrder.subTotal}
-              totalAmount={currentOrder.totalAmount}
-            />
+            {currentVoucher && (
+              <VoucherDetailsItems
+                items={currentVoucher.products}
+                taxes={currentVoucher.taxes || 0}
+                shipping={currentVoucher.shipping}
+                discount={currentVoucher.discount}
+                subTotal={currentVoucher.subTotal}
+                totalAmount={currentVoucher.totalAmount}
+              />
+            )}
 
-            <OrderDetailsHistory history={currentOrder.history} />
+            {/* <VoucherDetailsHistory history={currentVoucher.history} /> */}
           </Stack>
         </Grid>
 
         <Grid xs={12} md={4}>
-          <OrderDetailsInfo
-            customer={currentOrder.customer}
-            delivery={currentOrder.delivery}
-            payment={currentOrder.payment}
-            shippingAddress={currentOrder.shippingAddress}
-          />
+          {currentVoucher && <VoucherDetailsInfo party_name={currentVoucher.party_name} />}
         </Grid>
       </Grid>
     </Container>

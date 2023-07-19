@@ -28,17 +28,16 @@ export function useGetVouchers() {
 
 // ----------------------------------------------------------------------
 
-export function useGetUser(userId) {
-  const URL = userId ? [endpoints.user.details(userId)] : null;
-
+export function useGetVoucher(voucherId) {
+  const URL = voucherId ? [endpoints.voucher.details(voucherId)] : null;
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
-      user: data,
-      userLoading: isLoading,
-      userError: error,
-      userValidating: isValidating,
+      voucher: data,
+      voucherLoading: isLoading,
+      voucherError: error,
+      voucherValidating: isValidating,
     }),
     [data, error, isLoading, isValidating]
   );

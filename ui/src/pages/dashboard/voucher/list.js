@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import LedgerListView from 'src/sections/ledger/view/ledger-list-view';
-import { ProductListView } from 'src/sections/product/view';
 import { UserListView } from 'src/sections/user/view';
+import VoucherListView from 'src/sections/voucher/view/voucher-list-view';
 // sections
 
 // ----------------------------------------------------------------------
@@ -13,7 +12,7 @@ export default function VoucherListPage() {
         <title> Dashboard: Voucher List</title>
       </Helmet>
 
-      <UserListView />
+      <VoucherListView />
     </>
   );
 }

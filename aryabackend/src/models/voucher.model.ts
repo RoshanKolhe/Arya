@@ -113,9 +113,9 @@ export class Voucher extends Entity {
   totalQuantity: number;
 
   @property({
-    type: 'boolean',
+    type: 'number',
   })
-  is_synced: boolean;
+  is_synced: number;
 
   @property({
     type: 'date',

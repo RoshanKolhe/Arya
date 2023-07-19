@@ -81,10 +81,10 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
         <Label
           variant="soft"
           color={
-            (is_synced === true && 'success') || (is_synced === false && 'warning') || 'default'
+            (is_synced === 1 && 'success') || (is_synced === 0 && 'warning') || 'default'
           }
         >
-          {(is_synced === true && 'synced') || (is_synced === false && 'not synced') || ''}
+          {(is_synced === 1 && 'synced') || (is_synced === 0 && 'not synced') || ''}
         </Label>
       </TableCell>
 

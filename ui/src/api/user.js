@@ -30,7 +30,7 @@ export function useGetUsers() {
 
 export function useGetUser(userId) {
   const URL = userId ? [endpoints.user.details(userId)] : null;
-
+  console.log(URL);
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(

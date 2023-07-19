@@ -11,6 +11,7 @@ import BrandEditPage from 'src/pages/dashboard/brand/edit';
 import UserListPage from 'src/pages/dashboard/user/list';
 import UserCreatePage from 'src/pages/dashboard/user/new';
 import UserEditPage from 'src/pages/dashboard/user/edit';
+import VoucherEditPage from 'src/pages/dashboard/voucher/edit';
 import VoucherListView from '../../sections/voucher/view/voucher-list-view';
 
 // ----------------------------------------------------------------------
@@ -97,9 +98,9 @@ export const dashboardRoutes = [
         path: 'Voucher',
         children: [
           { element: <VoucherListView />, index: true },
-          { path: 'list', element: <UserListPage /> },
+          { path: 'list', element: <VoucherListView /> },
           { path: 'new', element: <UserCreatePage /> },
-          { path: ':id/edit', element: <UserEditPage /> },
+          { path: ':id', element: <VoucherEditPage /> },
         ],
       },
     ],

@@ -25,7 +25,7 @@ export default function VoucherDetailsToolbar({
   onChangeStatus,
 }) {
   const popover = usePopover();
-
+  console.log(typeof status);
   return (
     <>
       <Stack
@@ -46,13 +46,15 @@ export default function VoucherDetailsToolbar({
               <Label
                 variant="soft"
                 color={
-                  (status === 'completed' && 'success') ||
-                  (status === 'pending' && 'warning') ||
-                  (status === 'cancelled' && 'error') ||
+                  (status === 1 && 'success') ||
+                  (status === 0 && 'warning') ||
+                  (status === 2 && 'error') ||
                   'default'
                 }
               >
-                {status}
+                {(status === 0 && 'Pending') ||
+                  (status === 1 && 'Synced') ||
+                  (status === 2 && 'Cancelled')}
               </Label>
             </Stack>
 
@@ -76,7 +78,9 @@ export default function VoucherDetailsToolbar({
             onClick={popover.onOpen}
             sx={{ textTransform: 'capitalize' }}
           >
-            {status}
+            {(status === 0 && 'Pending') ||
+              (status === 1 && 'Synced') ||
+              (status === 2 && 'Cancelled')}
           </Button>
 
           <Button
