@@ -30,10 +30,10 @@ export default function VoucherEditView() {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           {
-            name: 'User',
-            href: paths.dashboard.user.root,
+            name: 'Voucher',
+            href: paths.dashboard.voucher.root,
           },
-          { name: currentVoucher?.name },
+          { name: currentVoucher?.party_name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },

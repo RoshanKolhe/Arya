@@ -38,6 +38,37 @@ interface Voucher {
   IS_ORDER_VOUCHER: string;
 }
 
+interface Header {
+  VERSION: string;
+  STATUS: string;
+}
+
+interface ImportResult {
+  CREATED: string;
+  ALTERED: string;
+  DELETED: string;
+  LASTVCHID: string;
+  LASTMID: string;
+  COMBINED: string;
+  IGNORED: string;
+  ERRORS: string;
+  CANCELLED: string;
+}
+
+interface CompanyInfo {
+  COMPANY: string;
+  GROUP: string;
+  LEDGER: string;
+  // Add other properties from the XML if needed...
+}
+
+interface ParsedResponse {
+  HEADER: Header;
+  IMPORTRESULT: ImportResult;
+  CMPINFO: CompanyInfo;
+  // Add other properties from the XML if needed...
+}
+
 interface Ledger {
   name: string;
   guid: string;
@@ -212,6 +243,27 @@ export class TallyHttpCallService {
           }
 
           resolve(voucherArray);
+        }
+      });
+    });
+  }
+
+  parseSuccessSyncVoucherData(xmlData: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      parseString(xmlData, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Extract the relevant information from the parsed XML
+          const parsedResponse: ParsedResponse = {
+            HEADER: result.ENVELOPE.HEADER[0],
+            IMPORTRESULT: result.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0],
+            CMPINFO: result.ENVELOPE.BODY[0].DESC[0].CMPINFO[0],
+            // Add other properties from the XML if needed...
+          };
+
+          // You can return an array of objects if you expect multiple responses in the future
+          resolve(parsedResponse);
         }
       });
     });

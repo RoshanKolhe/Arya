@@ -9,6 +9,6 @@ export { default as RHFSlider } from './rhf-slider';
 export { default as RHFTextField } from './rhf-text-field';
 export { default as RHFRadioGroup } from './rhf-radio-group';
 export { default as RHFAutocomplete } from './rhf-autocomplete';
-export { default as RHFDatePicker} from './rhf-date-picker';
+export { default as RHFDatePicker } from './rhf-date-picker';
 
 export { default } from './form-provider';

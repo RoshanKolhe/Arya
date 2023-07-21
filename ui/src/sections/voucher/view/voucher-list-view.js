@@ -40,10 +40,11 @@ import {
 } from 'src/components/table';
 //
 import { useGetVouchers } from 'src/api/voucher';
+import axiosInstance from 'src/utils/axios';
+import { useSnackbar } from 'notistack';
 import VoucherTableToolbar from '../voucher-table-toolbar';
 import VoucherTableFiltersResult from '../voucher-table-filters-result';
 import VoucherTableRow from '../voucher-table-row';
-
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [{ value: 'all', label: 'All' }];
@@ -75,7 +76,7 @@ export default function VoucherListView() {
   const router = useRouter();
 
   const confirm = useBoolean();
-
+  const { enqueueSnackbar } = useSnackbar();
   const [tableData, setTableData] = useState([]);
 
   const { vouchers, vouchersLoading, vouchersEmpty, refreshVouchers } = useGetVouchers();
@@ -144,9 +145,41 @@ export default function VoucherListView() {
 
   const handleViewRow = useCallback(
     (id) => {
+      router.push(paths.dashboard.voucher.details(id));
+    },
+    [router]
+  );
+
+  const handleEditRow = useCallback(
+    (id) => {
       router.push(paths.dashboard.voucher.edit(id));
     },
     [router]
+  );
+
+  const handleSyncVoucher = useCallback(
+    async (voucher) => {
+      await axiosInstance.post('/api/vouchers/syncToTally', voucher).then((res) => {
+        console.log(res);
+
+        const { data } = res;
+
+        console.log(typeof data.HEADER.STATUS[0]);
+
+        console.log(data.HEADER.STATUS[0]);
+
+        if (data.HEADER.STATUS[0] === '1') {
+          console.log('here');
+          refreshVouchers();
+          enqueueSnackbar('voucher synced successfully!');
+        } else {
+          enqueueSnackbar('Voucher sync failed!', {
+            variant: 'error',
+          });
+        }
+      });
+    },
+    [enqueueSnackbar, refreshVouchers]
   );
 
   const handleFilterStatus = useCallback(
@@ -303,6 +336,12 @@ export default function VoucherListView() {
                             onSelectRow={() => table.onSelectRow(row.id)}
                             onDeleteRow={() => handleDeleteRow(row.id)}
                             onViewRow={() => handleViewRow(row.id)}
+                            onEditRow={() => {
+                              handleEditRow(row.id);
+                            }}
+                            onSyncVoucher={() => {
+                              handleSyncVoucher(row);
+                            }}
                           />
                         ))}
                     </>

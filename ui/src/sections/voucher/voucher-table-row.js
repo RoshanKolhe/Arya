@@ -25,7 +25,15 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow, onDeleteRow }) {
+export default function VoucherTableRow({
+  row,
+  selected,
+  onViewRow,
+  onSelectRow,
+  onDeleteRow,
+  onEditRow,
+  onSyncVoucher,
+}) {
   const { party_name, products, status, id, createdAt, is_synced, totalQuantity, totalAmount } =
     row;
 
@@ -164,7 +172,7 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
         arrow="right-top"
         sx={{ width: 140 }}
       >
-        <MenuItem
+        {/* <MenuItem
           onClick={() => {
             confirm.onTrue();
             popover.onClose();
@@ -173,9 +181,9 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
         >
           <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
-        </MenuItem>
+        </MenuItem> */}
 
-        <MenuItem
+        {/* <MenuItem
           onClick={() => {
             onViewRow();
             popover.onClose();
@@ -183,6 +191,25 @@ export default function VoucherTableRow({ row, selected, onViewRow, onSelectRow,
         >
           <Iconify icon="solar:eye-bold" />
           View
+        </MenuItem> */}
+
+        <MenuItem
+          onClick={() => {
+            onEditRow();
+            popover.onClose();
+          }}
+        >
+          <Iconify icon="material-symbols:edit" />
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            onSyncVoucher();
+            popover.onClose();
+          }}
+        >
+          <Iconify icon="ic:outline-sync" />
+          Sync
         </MenuItem>
       </CustomPopover>
 
@@ -205,6 +232,8 @@ VoucherTableRow.propTypes = {
   onDeleteRow: PropTypes.func,
   onSelectRow: PropTypes.func,
   onViewRow: PropTypes.func,
+  onEditRow: PropTypes.func,
+  onSyncVoucher: PropTypes.func,
   row: PropTypes.object,
   selected: PropTypes.bool,
 };

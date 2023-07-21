@@ -25,7 +25,6 @@ export default function VoucherDetailsToolbar({
   onChangeStatus,
 }) {
   const popover = usePopover();
-  console.log(typeof status);
   return (
     <>
       <Stack

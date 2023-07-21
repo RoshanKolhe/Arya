@@ -1,202 +1,149 @@
 import PropTypes from 'prop-types';
+import { useEffect, useMemo } from 'react';
 import * as Yup from 'yup';
-import { useCallback, useMemo, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Unstable_Grid2';
-import CardHeader from '@mui/material/CardHeader';
-import Typography from '@mui/material/Typography';
 // routes
 import { paths } from 'src/routes/paths';
-// hooks
-import { useResponsive } from 'src/hooks/use-responsive';
-// _mock
-import { _tags } from 'src/_mock';
-// components
-import { useSnackbar } from 'src/components/snackbar';
 import { useRouter } from 'src/routes/hook';
-import { RHFTextField, RHFSelect } from 'src/components/hook-form';
-import FormProvider from 'src/components/hook-form/form-provider';
-import axiosInstance from 'src/utils/axios';
-import { IconButton, InputAdornment } from '@mui/material';
-import Iconify from 'src/components/iconify/iconify';
+// _mock
+import { _addressBooks } from 'src/_mock';
+// hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useGetProducts } from 'src/api/product';
-import { useGetLedgers } from 'src/api/ledger';
+// components
+import FormProvider from 'src/components/hook-form';
+//
+import VoucherNewEditDetails from './voucher-new-edit-details';
+import VoucherNewEditStatusDate from './voucher-new-edit-status-date';
 
 // ----------------------------------------------------------------------
 
 export default function VoucherNewEditForm({ currentVoucher }) {
-  console.log(currentVoucher);
   const router = useRouter();
 
-  const mdUp = useResponsive('up', 'md');
+  const loadingSave = useBoolean();
 
-  const { enqueueSnackbar } = useSnackbar();
+  const loadingSend = useBoolean();
 
-  const password = useBoolean();
-
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [filteredLedgers, setFilteredLedgers] = useState([]);
-
-  const { products, productsLoading, productsEmpty } = useGetProducts();
-  const { ledgers, ledgersLoading, ledgersEmpty, refreshLedgers } = useGetLedgers();
-
-  const NewVoucherSchema = Yup.object().shape({
-    name: Yup.string().required('Party name is required'),
-    products: Yup.array().of(
-      Yup.object().shape({
-        productName: Yup.string().required('Please select the product'),
-        quantity: Yup.string().required('Quantity is required'),
-        rate: Yup.string().required('Rate is required'),
-      })
-    ),
+  const NewInvoiceSchema = Yup.object().shape({
+    createdAt: Yup.mixed().nullable().required('Create date is required'),
+    // not required
+    taxes: Yup.number(),
+    status: Yup.number(),
+    discount: Yup.number(),
+    shipping: Yup.number(),
+    totalAmount: Yup.number(),
+    voucherNumber: Yup.string(),
   });
-
   const defaultValues = useMemo(
     () => ({
-      name: currentVoucher?._party_name || '',
+      party_name: currentVoucher?.guid || '',
+      voucherNumber: currentVoucher?.id || 'INV-1990',
+      createdAt: currentVoucher?.createdAt || new Date(),
+      taxes: currentVoucher?.taxes || 0,
+      shipping: currentVoucher?.shipping || 0,
+      status: currentVoucher?.is_synced || 0,
+      discount: currentVoucher?.discount || 0,
+      items: currentVoucher?.products || [
+        {
+          productName: '',
+          notes: '',
+          description: '',
+          service: '',
+          quantity: 1,
+          rate: 0,
+          total: 0,
+        },
+      ],
+      totalAmount: currentVoucher?.totalAmount || 0,
     }),
     [currentVoucher]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewVoucherSchema),
+    resolver: yupResolver(NewInvoiceSchema),
     defaultValues,
   });
 
   const {
     reset,
+
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
-
-  useEffect(() => {
-    if (currentVoucher) {
-      reset(defaultValues);
-    }
-  }, [currentVoucher, defaultValues, reset]);
-  const onSubmit = handleSubmit(async (data) => {
+  const handleCreateAndSend = handleSubmit(async (data) => {
+    loadingSend.onTrue();
     console.log(data);
-    try {
-      if (currentVoucher) {
-        const inputData = {
-          name: data.name,
-          email: data.email,
-          contactNo: data.contactNo,
-        };
-        await axiosInstance
-          .patch(`/api/users/${currentVoucher.id}`, inputData)
-          .then((res) => {
-            reset();
-            enqueueSnackbar('Update success!');
-            router.push(paths.dashboard.user.root);
-          })
-          .catch((err) => {
-            enqueueSnackbar(
-              err.response.data.error.message
-                ? err.response.data.error.message
-                : 'something went wrong!',
-              { variant: 'error' }
-            );
-          });
-      } else {
-        const inputData = {
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          contactNo: data.contactNo,
-          isActive: true,
-          permissions: ['sales'],
-        };
-        await axiosInstance
-          .post(`/register`, inputData)
-          .then((res) => {
-            reset();
-            enqueueSnackbar('Create success!');
-            router.push(paths.dashboard.user.root);
-          })
-          .catch((err) => {
-            console.error(err.response.data.error.message);
-            enqueueSnackbar(
-              err.response.data.error.message
-                ? err.response.data.error.message
-                : 'something went wrong!',
-              { variant: 'error' }
-            );
-          });
-      }
-    } catch (error) {
-      console.error(error);
-      enqueueSnackbar(error, { variant: 'error' });
-    }
+
+    // try {
+    //   await new Promise((resolve) => setTimeout(resolve, 500));
+    //   reset();
+    //   loadingSend.onFalse();
+    //   router.push(paths.dashboard.invoice.root);
+    //   console.info('DATA', JSON.stringify(data, null, 2));
+    // } catch (error) {
+    //   console.error(error);
+    //   loadingSend.onFalse();
+    // }
   });
 
   useEffect(() => {
-    if (products.length) {
-      setFilteredProducts(products);
+    if (currentVoucher) {
+      const {
+        id,
+        createdAt,
+        _party_name,
+        taxes,
+        shipping,
+        status,
+        is_synced,
+        discount,
+        products,
+        totalAmount,
+      } = currentVoucher;
+      const updatedValues = {
+        party_name: _party_name,
+        voucherNumber: id || 'INV-1990',
+        createdAt: createdAt || new Date(),
+        taxes: taxes || 0,
+        shipping: shipping || 0,
+        status: is_synced || 0,
+        discount: discount || 0,
+        items: products || [{ name: '', notes: '', quantity: 1, rate: 0, total: 0 }],
+        totalAmount: totalAmount || 0,
+      };
+      // Set the form values using the setValue method from react-hook-form
+      Object.keys(updatedValues).forEach((key) => {
+        methods.setValue(key, updatedValues[key]);
+      });
     }
-    if (ledgers.length) {
-      setFilteredLedgers(ledgers);
-    }
-  }, [products, ledgers]);
-
-  const renderDetails = (
-    <>
-      {mdUp && (
-        <Grid md={4}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Name,Email,Contact No...
-          </Typography>
-        </Grid>
-      )}
-
-      <Grid xs={12} md={8}>
-        <Card>
-          {!mdUp && <CardHeader title="Details" />}
-
-          <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFSelect native name="name" label="Party Name" InputLabelProps={{ shrink: true }}>
-              {filteredLedgers.map((ledger) => (
-                <option key={ledger.id} value={ledger.guid}>
-                  {ledger.name}
-                </option>
-              ))}
-            </RHFSelect>
-          </Stack>
-        </Card>
-      </Grid>
-    </>
-  );
-
-  const renderActions = (
-    <>
-      {mdUp && <Grid md={4} />}
-      <Grid xs={12} md={8} sx={{ display: 'flex', justifyContent: 'end' }}>
-        <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentVoucher ? 'Create User' : 'Save Changes'}
-        </LoadingButton>
-      </Grid>
-    </>
-  );
+  }, [currentVoucher, methods]);
 
   return (
-    <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Grid container spacing={3}>
-        {renderDetails}
-        {renderActions}
-      </Grid>
+    <FormProvider methods={methods}>
+      <Card>
+        <VoucherNewEditStatusDate />
+
+        <VoucherNewEditDetails />
+      </Card>
+
+      <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
+        <LoadingButton
+          size="large"
+          variant="contained"
+          loading={loadingSend.value && isSubmitting}
+          onClick={() => {
+            console.log('here');
+            handleCreateAndSend();
+          }}
+        >
+          Update
+        </LoadingButton>
+      </Stack>
     </FormProvider>
   );
 }

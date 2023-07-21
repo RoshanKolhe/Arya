@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import {inject} from '@loopback/core';
 import {TallyHttpCallService} from '../services/tally-http-call';
@@ -21,6 +22,7 @@ import {HttpErrors, post, get, requestBody, param} from '@loopback/rest';
 import {Voucher} from '../models';
 import {ALL_VOUCHERS_DATA} from '../helpers/getAllVouchers';
 import {ACTIVE_COMPANY_TALLY_XML} from '../helpers/getActiveCompanyTallyXml';
+import {SYNC_VOUCHERS_DATA_XML} from '../helpers/syncVoucehrWithTallyXml';
 
 export class VoucherController {
   constructor(
@@ -42,7 +44,7 @@ export class VoucherController {
     strategy: 'jwt',
     options: {required: [PermissionKeys.SALES]},
   })
-  @post('/api/vouchers/sync')
+  @post('/api/vouchers/syncFromTally')
   async syncVouchers(): Promise<any> {
     try {
       const companyXml = ACTIVE_COMPANY_TALLY_XML();
@@ -123,6 +125,46 @@ export class VoucherController {
     strategy: 'jwt',
     options: {required: [PermissionKeys.SALES]},
   })
+  @post('/api/vouchers/syncToTally')
+  async syncVouchersToTally(
+    @requestBody({})
+    voucher: any,
+  ): Promise<any> {
+    const repo = new DefaultTransactionalRepository(Voucher, this.dataSource);
+    const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
+    try {
+      await this.voucherRepository.updateById(
+        voucher.id,
+        {
+          is_synced: 1,
+        },
+        {
+          transaction: tx,
+        },
+      );
+      const voucherPostXml = SYNC_VOUCHERS_DATA_XML(voucher);
+      const result: any = await this.tallyPostService.postTallyXML(
+        voucherPostXml,
+      );
+      const parsedCompanyXmlData =
+        await this.tallyPostService.parseSuccessSyncVoucherData(result);
+      if (parsedCompanyXmlData.HEADER.STATUS[0] === '1') {
+        await tx.commit();
+      } else {
+        await tx.rollback();
+      }
+      return parsedCompanyXmlData;
+    } catch (error) {
+      await tx.rollback();
+      console.log(error);
+      throw new HttpErrors.PreconditionFailed(error.message);
+    }
+  }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
   @post('/api/voucher/create')
   async create(
     @requestBody({})
@@ -191,7 +233,7 @@ export class VoucherController {
           productId: product.productGuid,
           quantity: product.quantity,
           rate: product.rate,
-          amount: product.amount,
+          amount: parseInt(product.quantity) * parseFloat(product.rate),
           discount: product.discount,
           godown: 'Main Location',
           _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
@@ -203,6 +245,105 @@ export class VoucherController {
       });
       await tx.commit();
       return newVoucher;
+    } catch (error) {
+      await tx.rollback();
+
+      // Handle errors and return appropriate response
+      console.error('Error creating voucher:', error);
+      throw new Error('Failed to create voucher');
+    }
+  }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
+  @post('/api/voucher/update')
+  async updateVoucher(
+    @requestBody({})
+    voucher: any,
+  ): Promise<any> {
+    const repo = new DefaultTransactionalRepository(Voucher, this.dataSource);
+    const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
+    try {
+      const voucherData = await this.voucherRepository.findById(
+        parseInt(voucher.voucherNumber),
+      );
+      if (!voucherData) {
+        throw new Error('Voucher not found');
+      }
+
+      if (!voucher || typeof voucher !== 'object') {
+        throw new HttpErrors.BadRequest('Invalid Request data');
+      }
+
+      const party = await this.ledgerRepository.findOne({
+        where: {
+          guid: voucher.party_name,
+        },
+      });
+
+      // Check if the party exists
+      if (!party) {
+        throw new HttpErrors.NotFound('Party not found');
+      }
+
+      const currentDate = voucher.createdAt;
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      let totaAmountData = 0;
+      let totalQuantityData = 0;
+      if (voucher.items && voucher.items.length > 0) {
+        voucher.items.foreach((res: any) => {
+          totalQuantityData += res.quantity;
+          totaAmountData += res.rate;
+        });
+      }
+
+      const voucherUpdateData = {
+        date: formattedDate,
+        voucher_type: 'Sales',
+        _voucher_type: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000026',
+        party_name: party.name,
+        _party_name: party.guid,
+        place_of_supply: 'Goa',
+        is_invoice: true,
+        is_accounting_voucher: true,
+        is_inventory_voucher: false,
+        is_order_voucher: false,
+        is_synced: 0,
+        totalAmount: totaAmountData,
+        totalQuantity: totalQuantityData,
+      };
+
+      await this.voucherRepository.updateById(
+        voucherData.id,
+        voucherUpdateData,
+        {
+          transaction: tx,
+        },
+      );
+
+      voucher.items.foreach((product: any) => {
+        const voucherItem = {
+          voucherId: voucherData.id,
+          productId: product.productGuid,
+          quantity: product.quantity,
+          rate: product.rate,
+          amount: parseInt(product.quantity) * parseFloat(product.rate),
+          discount: product.discount,
+          godown: 'Main Location',
+          _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
+          notes: product.notes,
+        };
+      });
+      // await this.voucherProductRepository.createAll(voucherProducts, {
+      //   transaction: tx,
+      // });
+      // await tx.commit();
+      // return newVoucher;
     } catch (error) {
       await tx.rollback();
 
