@@ -143,11 +143,16 @@ export class VoucherController {
         },
       );
       const voucherPostXml = SYNC_VOUCHERS_DATA_XML(voucher);
+      console.log(voucherPostXml);
       const result: any = await this.tallyPostService.postTallyXML(
         voucherPostXml,
       );
+      console.log(result);
+
       const parsedCompanyXmlData =
         await this.tallyPostService.parseSuccessSyncVoucherData(result);
+      console.log(parsedCompanyXmlData);
+
       if (parsedCompanyXmlData.HEADER.STATUS[0] === '1') {
         await tx.commit();
       } else {
@@ -259,51 +264,38 @@ export class VoucherController {
     options: {required: [PermissionKeys.SALES]},
   })
   @post('/api/voucher/update')
-  async updateVoucher(
-    @requestBody({})
-    voucher: any,
-  ): Promise<any> {
+  async updateVoucher(@requestBody({}) voucherData: any): Promise<any> {
     const repo = new DefaultTransactionalRepository(Voucher, this.dataSource);
     const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
     try {
-      const voucherData = await this.voucherRepository.findById(
-        parseInt(voucher.voucherNumber),
+      const voucher = await this.voucherRepository.findById(
+        parseInt(voucherData.voucherNumber),
       );
-      if (!voucherData) {
-        throw new Error('Voucher not found');
-      }
 
-      if (!voucher || typeof voucher !== 'object') {
-        throw new HttpErrors.BadRequest('Invalid Request data');
+      if (!voucher) {
+        throw new HttpErrors.NotFound('Voucher not found');
       }
 
       const party = await this.ledgerRepository.findOne({
         where: {
-          guid: voucher.party_name,
+          guid: voucherData.party_name,
         },
       });
 
-      // Check if the party exists
       if (!party) {
-        throw new HttpErrors.NotFound('Party not found');
+        throw new HttpErrors.UnprocessableEntity('Party not found');
       }
 
-      const currentDate = voucher.createdAt;
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const formattedDate = `${year}-${month}-${day}`;
-      let totaAmountData = 0;
+      let totalAmountData = 0;
       let totalQuantityData = 0;
-      if (voucher.items && voucher.items.length > 0) {
-        voucher.items.foreach((res: any) => {
-          totalQuantityData += res.quantity;
-          totaAmountData += res.rate;
-        });
+
+      for (const item of voucherData.items) {
+        totalQuantityData += item.quantity;
+        totalAmountData += item.quantity * item.rate;
       }
 
       const voucherUpdateData = {
-        date: formattedDate,
+        date: voucherData.date,
         voucher_type: 'Sales',
         _voucher_type: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000026',
         party_name: party.name,
@@ -314,42 +306,57 @@ export class VoucherController {
         is_inventory_voucher: false,
         is_order_voucher: false,
         is_synced: 0,
-        totalAmount: totaAmountData,
+        totalAmount: totalAmountData,
         totalQuantity: totalQuantityData,
       };
 
-      await this.voucherRepository.updateById(
-        voucherData.id,
-        voucherUpdateData,
+      await this.voucherRepository.updateById(voucher.id, voucherUpdateData, {
+        transaction: tx,
+      });
+
+      const voucherProducts: any[] = await Promise.all(
+        voucherData.items.map(async (product: any) => {
+          const productData = await this.productRepository.findOne({
+            where: {name: product.productName},
+          });
+          console.log(product.productName);
+          console.log(productData);
+          return {
+            voucherId: voucher.id,
+            productId: productData?.guid,
+            quantity: product.quantity,
+            rate: product.rate,
+            amount: product.rate * product.quantity, // Calculate the total amount for each product
+            discount: product.discount || 0,
+            godown: 'Main Location',
+            _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
+            notes: product.notes,
+          };
+        }),
+      );
+
+      await this.voucherProductRepository.deleteAll(
+        {
+          voucherId: voucher.id,
+        },
         {
           transaction: tx,
         },
       );
-
-      voucher.items.foreach((product: any) => {
-        const voucherItem = {
-          voucherId: voucherData.id,
-          productId: product.productGuid,
-          quantity: product.quantity,
-          rate: product.rate,
-          amount: parseInt(product.quantity) * parseFloat(product.rate),
-          discount: product.discount,
-          godown: 'Main Location',
-          _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
-          notes: product.notes,
-        };
+      await this.voucherProductRepository.createAll(voucherProducts, {
+        transaction: tx,
       });
-      // await this.voucherProductRepository.createAll(voucherProducts, {
-      //   transaction: tx,
-      // });
-      // await tx.commit();
-      // return newVoucher;
+
+      await tx.commit();
+
+      return await Promise.resolve({
+        success: true,
+        message: 'Voucher products synced successfully',
+      });
     } catch (error) {
       await tx.rollback();
-
-      // Handle errors and return appropriate response
-      console.error('Error creating voucher:', error);
-      throw new Error('Failed to create voucher');
+      console.log('Error creating voucher:', error);
+      throw new HttpErrors.InternalServerError('Failed to update voucher');
     }
   }
 

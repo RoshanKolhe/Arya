@@ -52,10 +52,12 @@ const STATUS_OPTIONS = [{ value: 'all', label: 'All' }];
 const TABLE_HEAD = [
   { id: 'id', label: 'Order', width: 116 },
   { id: 'name', label: 'Customer' },
-  { id: 'createdAt', label: 'Date', width: 140 },
+  { id: 'date', label: 'Voucher Date', width: 140 },
   { id: 'totalQuantity', label: 'Quantity', width: 140 },
   { id: 'totalAmount', label: 'Price', width: 140 },
   { id: 'is_synced', label: 'Synced', width: 110 },
+  { id: 'createdAt', label: 'Created At', width: 140 },
+
   { id: '', width: 88 },
 ];
 

@@ -34,7 +34,7 @@ export default function VoucherTableRow({
   onEditRow,
   onSyncVoucher,
 }) {
-  const { party_name, products, status, id, createdAt, is_synced, totalQuantity, totalAmount } =
+  const { party_name, products, status, id, createdAt, date,is_synced, totalQuantity, totalAmount } =
     row;
 
   const confirm = useBoolean();
@@ -70,11 +70,10 @@ export default function VoucherTableRow({
           secondaryTypographyProps={{ component: 'span', color: 'text.disabled' }}
         />
       </TableCell>
-
       <TableCell>
         <ListItemText
-          primary={format(new Date(createdAt), 'dd MMM yyyy')}
-          secondary={format(new Date(createdAt), 'p')}
+          primary={format(new Date(date), 'dd MMM yyyy')}
+          // secondary={format(new Date(createdAt), 'p')}
           primaryTypographyProps={{ typography: 'body2', noWrap: true }}
           secondaryTypographyProps={{
             mt: 0.5,
@@ -94,7 +93,18 @@ export default function VoucherTableRow({
           {(is_synced === 1 && 'synced') || (is_synced === 0 && 'not synced') || ''}
         </Label>
       </TableCell>
-
+      <TableCell>
+        <ListItemText
+          primary={format(new Date(createdAt), 'dd MMM yyyy')}
+          secondary={format(new Date(createdAt), 'p')}
+          primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+          secondaryTypographyProps={{
+            mt: 0.5,
+            component: 'span',
+            typography: 'caption',
+          }}
+        />
+      </TableCell>
       <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
         <IconButton
           color={collapse.value ? 'inherit' : 'default'}
@@ -202,15 +212,17 @@ export default function VoucherTableRow({
           <Iconify icon="material-symbols:edit" />
           Edit
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            onSyncVoucher();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="ic:outline-sync" />
-          Sync
-        </MenuItem>
+        {row.is_synced === 0 ? (
+          <MenuItem
+            onClick={() => {
+              onSyncVoucher();
+              popover.onClose();
+            }}
+          >
+            <Iconify icon="ic:outline-sync" />
+            Sync
+          </MenuItem>
+        ) : null}
       </CustomPopover>
 
       <ConfirmDialog

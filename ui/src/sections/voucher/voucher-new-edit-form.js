@@ -17,6 +17,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // components
 import FormProvider from 'src/components/hook-form';
 //
+import axiosInstance from 'src/utils/axios';
+import { useSnackbar } from 'notistack';
 import VoucherNewEditDetails from './voucher-new-edit-details';
 import VoucherNewEditStatusDate from './voucher-new-edit-status-date';
 
@@ -28,7 +30,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
   const loadingSave = useBoolean();
 
   const loadingSend = useBoolean();
-
+  const { enqueueSnackbar } = useSnackbar();
   const NewInvoiceSchema = Yup.object().shape({
     createdAt: Yup.mixed().nullable().required('Create date is required'),
     // not required
@@ -78,17 +80,41 @@ export default function VoucherNewEditForm({ currentVoucher }) {
   const handleCreateAndSend = handleSubmit(async (data) => {
     loadingSend.onTrue();
     console.log(data);
+    console.log(data.createdAt);
+    const date = new Date(data.createdAt);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
 
-    // try {
-    //   await new Promise((resolve) => setTimeout(resolve, 500));
-    //   reset();
-    //   loadingSend.onFalse();
-    //   router.push(paths.dashboard.invoice.root);
-    //   console.info('DATA', JSON.stringify(data, null, 2));
-    // } catch (error) {
-    //   console.error(error);
-    //   loadingSend.onFalse();
-    // }
+    const updatedVoucherData = {
+      ...data,
+      date: formattedDate,
+    };
+    try {
+      await axiosInstance
+        .post(`/api/voucher/update`, updatedVoucherData)
+        .then((res) => {
+          if (res.data.success) {
+            reset();
+            enqueueSnackbar('Update success!');
+            router.push(paths.dashboard.voucher.root);
+          } else {
+            enqueueSnackbar('something went wrong!', { variant: 'error' });
+          }
+        })
+        .catch((err) => {
+          enqueueSnackbar(
+            err.response.data.error.message
+              ? err.response.data.error.message
+              : 'something went wrong!',
+            { variant: 'error' }
+          );
+        });
+    } catch (error) {
+      console.error(error);
+      loadingSend.onFalse();
+    }
   });
 
   useEffect(() => {
@@ -130,20 +156,21 @@ export default function VoucherNewEditForm({ currentVoucher }) {
 
         <VoucherNewEditDetails />
       </Card>
-
-      <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
-        <LoadingButton
-          size="large"
-          variant="contained"
-          loading={loadingSend.value && isSubmitting}
-          onClick={() => {
-            console.log('here');
-            handleCreateAndSend();
-          }}
-        >
-          Update
-        </LoadingButton>
-      </Stack>
+      {currentVoucher && currentVoucher.is_synced === 0 ? (
+        <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
+          <LoadingButton
+            size="large"
+            variant="contained"
+            loading={loadingSend.value && isSubmitting}
+            onClick={() => {
+              console.log('here');
+              handleCreateAndSend();
+            }}
+          >
+            Update
+          </LoadingButton>
+        </Stack>
+      ) : null}
     </FormProvider>
   );
 }

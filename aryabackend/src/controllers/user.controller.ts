@@ -133,10 +133,10 @@ export class UserController {
         id: currnetUser.id,
       },
     });
-
+    const userData = _.omit(user, 'password');
     return Promise.resolve({
-      ...user,
-      displayName: user?.name,
+      ...userData,
+      displayName: userData?.name,
     });
   }
 
@@ -309,9 +309,7 @@ export class UserController {
     try {
       const tallyXml = ACTIVE_COMPANY_TALLY_XML();
       const res: any = await this.tallyPostService.postTallyXML(tallyXml);
-      const parsedXmlData = await this.tallyPostService.parseActiveCompany(
-        res,
-      );
+      const parsedXmlData = await this.tallyPostService.parseActiveCompany(res);
       return parsedXmlData;
     } catch (error) {
       console.log(error);
