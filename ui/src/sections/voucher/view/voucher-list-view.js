@@ -219,7 +219,7 @@ export default function VoucherListView() {
         />
 
         <Card>
-          <Tabs
+          {/* <Tabs
             value={filters.status}
             onChange={handleFilterStatus}
             sx={{
@@ -259,7 +259,7 @@ export default function VoucherListView() {
                 }
               />
             ))}
-          </Tabs>
+          </Tabs> */}
 
           <VoucherTableToolbar
             filters={filters}
