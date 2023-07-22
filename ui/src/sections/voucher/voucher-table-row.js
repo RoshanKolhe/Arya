@@ -34,8 +34,17 @@ export default function VoucherTableRow({
   onEditRow,
   onSyncVoucher,
 }) {
-  const { party_name, products, status, id, createdAt, date,is_synced, totalQuantity, totalAmount } =
-    row;
+  const {
+    party_name,
+    products,
+    status,
+    id,
+    createdAt,
+    date,
+    is_synced,
+    totalQuantity,
+    totalAmount,
+  } = row;
 
   const confirm = useBoolean();
 
@@ -45,9 +54,9 @@ export default function VoucherTableRow({
 
   const renderPrimary = (
     <TableRow hover selected={selected}>
-      <TableCell padding="checkbox">
+      {/* <TableCell padding="checkbox">
         <Checkbox checked={selected} onClick={onSelectRow} />
-      </TableCell>
+      </TableCell> */}
 
       <TableCell>
         <Box

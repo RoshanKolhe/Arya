@@ -42,9 +42,9 @@ export default function ProductTableRow({
   return (
     <>
       <TableRow hover selected={selected}>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox checked={selected} onClick={onSelectRow} />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           <ListItemText
