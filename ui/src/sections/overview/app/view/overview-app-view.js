@@ -10,6 +10,7 @@ import { _appFeatured, _appAuthors, _appInstalled, _appRelated, _appInvoices } f
 // assets
 import { useSettingsContext } from 'src/components/settings';
 import { useAuthContext } from 'src/auth/hooks';
+import VoucherListView from 'src/sections/voucher/view/voucher-list-view';
 import { SeoIllustration } from '../../../../assets/illustrations';
 //
 import AppWidget from '../app-widget';
@@ -37,17 +38,21 @@ export default function OverviewAppView() {
         <Grid xs={12} md={12}>
           <AppWelcome
             title={`Welcome back 👋 \n ${user?.displayName}`}
-            description="If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything."
+            description=""
             img={<SeoIllustration />}
-            action={
-              <Button variant="contained" color="primary">
-                Go Now
-              </Button>
-            }
+            // action={
+            //   <Button variant="contained" color="primary">
+            //     Go Now
+            //   </Button>
+            // }
           />
         </Grid>
 
-        <Grid xs={12} md={4}>
+        <Grid xs={12} md={12}>
+          <VoucherListView />
+        </Grid>
+
+        {/* <Grid xs={12} md={4}>
           <AppWidgetSummary
             title="Total Active Users"
             percent={2.6}
@@ -194,7 +199,7 @@ export default function OverviewAppView() {
               }}
             />
           </Stack>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Container>
   );
