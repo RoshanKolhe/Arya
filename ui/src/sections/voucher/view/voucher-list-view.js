@@ -64,21 +64,20 @@ const TABLE_HEAD = [
 const defaultFilters = {
   party_name: '',
   status: 'all',
-  startDate: null,
-  endDate: null,
+  startDate: new Date(),
+  endDate: new Date(),
 };
 
 // ----------------------------------------------------------------------
 
 export default function VoucherListView() {
-  const table = useTable({ defaultOrderBy: 'orderNumber' });
+  const table = useTable({ defaultOrderBy: 'id' });
 
   const settings = useSettingsContext();
 
   const router = useRouter();
 
   const pathname = usePathname();
-  console.log(pathname);
   const confirm = useBoolean();
   const { enqueueSnackbar } = useSnackbar();
   const [tableData, setTableData] = useState([]);
@@ -144,7 +143,12 @@ export default function VoucherListView() {
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
   const handleResetFilters = useCallback(() => {
-    setFilters(defaultFilters);
+    setFilters({
+      party_name: '',
+      status: 'all',
+      startDate: null,
+      endDate: null,
+    });
   }, []);
 
   const handleViewRow = useCallback(
@@ -164,8 +168,6 @@ export default function VoucherListView() {
   const handleSyncVoucher = useCallback(
     async (voucher) => {
       await axiosInstance.post('/api/vouchers/syncToTally', voucher).then((res) => {
-        console.log(res);
-
         const { data } = res;
 
         console.log(typeof data.HEADER.STATUS[0]);
@@ -173,7 +175,6 @@ export default function VoucherListView() {
         console.log(data.HEADER.STATUS[0]);
 
         if (data.HEADER.STATUS[0] === '1') {
-          console.log('here');
           refreshVouchers();
           enqueueSnackbar('voucher synced successfully!');
         } else {
@@ -314,12 +315,12 @@ export default function VoucherListView() {
                   rowCount={tableData.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.id)
-                    )
-                  }
+                  onSelectAllRows={(checked) => {
+                    const syncedRows = tableData.filter((row) => row.is_synced === 0);
+                    const syncedIds = syncedRows.map((row) => row.id);
+
+                    table.onSelectAllRows(checked, syncedIds);
+                  }}
                 />
 
                 <TableBody>

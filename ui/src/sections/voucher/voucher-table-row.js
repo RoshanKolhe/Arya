@@ -54,9 +54,9 @@ export default function VoucherTableRow({
 
   const renderPrimary = (
     <TableRow hover selected={selected}>
-      {/* <TableCell padding="checkbox">
+      <TableCell padding="checkbox">
         <Checkbox checked={selected} onClick={onSelectRow} />
-      </TableCell> */}
+      </TableCell>
 
       <TableCell>
         <Box
@@ -136,7 +136,7 @@ export default function VoucherTableRow({
 
   const renderSecondary = (
     <TableRow>
-      <TableCell sx={{ p: 0, border: 'none' }} colSpan={8}>
+      <TableCell sx={{ p: 0, border: 'none' }} colSpan={10}>
         <Collapse
           in={collapse.value}
           timeout="auto"
@@ -229,7 +229,7 @@ export default function VoucherTableRow({
             }}
           >
             <Iconify icon="ic:outline-sync" />
-            Sync
+            Sync to Tally
           </MenuItem>
         ) : null}
       </CustomPopover>
