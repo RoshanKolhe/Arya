@@ -110,7 +110,7 @@ export default function Header({ onOpenNav }) {
         }}
       >
         <Typography sx={{ p: 2 }}>
-          {companyError ? companyError.error.message : `Company : ${company.name}`}
+          {!company && companyError ? companyError.error.message : `Company : ${company?.name}`}
         </Typography>
       </Popover>
     </>
