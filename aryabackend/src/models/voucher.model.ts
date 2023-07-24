@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {User} from './user.model';
 
 @model()
 export class Voucher extends Entity {
@@ -126,6 +127,9 @@ export class Voucher extends Entity {
     type: 'date',
   })
   updatedAt?: Date;
+
+  @belongsTo(() => User)
+  userId: number;
 
   constructor(data?: Partial<Voucher>) {
     super(data);

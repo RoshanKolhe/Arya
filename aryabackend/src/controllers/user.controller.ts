@@ -304,8 +304,8 @@ export class UserController {
     strategy: 'jwt',
     options: {required: [PermissionKeys.SALES]},
   })
-  @post('/api/getActiveCompany')
-  async syncProducts(): Promise<any> {
+  @get('/api/getActiveCompany')
+  async getActiveCompant(): Promise<any> {
     try {
       const tallyXml = ACTIVE_COMPANY_TALLY_XML();
       const res: any = await this.tallyPostService.postTallyXML(tallyXml);
@@ -313,7 +313,18 @@ export class UserController {
       return parsedXmlData;
     } catch (error) {
       console.log(error);
-      throw new HttpErrors.PreconditionFailed(error.message);
+      if (error.code === 'ECONNREFUSED') {
+        // Handle the ECONNREFUSED error
+        throw new HttpErrors.PreconditionFailed(
+          'Failed to connect to the Tally server.',
+        );
+      } else {
+        // Handle other errors
+        console.error('Error occurred while processing the request:', error);
+        throw new HttpErrors.InternalServerError(
+          'An error occurred while processing the request.',
+        );
+      }
     }
   }
 }

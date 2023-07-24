@@ -57,7 +57,6 @@ const TABLE_HEAD = [
   { id: 'totalAmount', label: 'Price', width: 140 },
   { id: 'is_synced', label: 'Synced', width: 110 },
   { id: 'createdAt', label: 'Created At', width: 140 },
-
   { id: '', width: 88 },
 ];
 
@@ -71,7 +70,7 @@ const defaultFilters = {
 // ----------------------------------------------------------------------
 
 export default function VoucherListView() {
-  const table = useTable({ defaultOrderBy: 'id' });
+  const table = useTable({ defaultOrderBy: 'id', defaultOrder: 'desc' });
 
   const settings = useSettingsContext();
 

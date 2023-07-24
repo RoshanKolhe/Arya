@@ -15,6 +15,12 @@ import Logo from 'src/components/logo';
 import SvgColor from 'src/components/svg-color';
 import { useSettingsContext } from 'src/components/settings';
 //
+import { useEffect, useState } from 'react';
+import { Button, Popover, Tooltip, Typography } from '@mui/material';
+import Iconify from 'src/components/iconify/iconify';
+import axiosInstance from 'src/utils/axios';
+import { useSnackbar } from 'notistack';
+import { useGetTallyCompany } from 'src/api/user';
 import { HEADER, NAV } from '../config-layout';
 import {
   Searchbar,
@@ -32,6 +38,9 @@ export default function Header({ onOpenNav }) {
 
   const settings = useSettingsContext();
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isHovering, setIsHovering] = useState(false);
+
   const isNavHorizontal = settings.themeLayout === 'horizontal';
 
   const isNavMini = settings.themeLayout === 'mini';
@@ -41,6 +50,71 @@ export default function Header({ onOpenNav }) {
   const offset = useOffSetTop(HEADER.H_DESKTOP);
 
   const offsetTop = offset && !isNavHorizontal;
+
+  const handleAnchorClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleAnchorClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
+
+  const { company, companyLoading, companyError, companyValidating } = useGetTallyCompany();
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'tally-status' : undefined;
+  console.log(companyError);
+  const RenderTallyStatus = (
+    <>
+      <Tooltip
+        title={company && !companyError ? 'Online' : 'Offline'}
+        open={isHovering}
+        placement="top"
+      >
+        <Button
+          aria-describedby={id}
+          variant="outlined"
+          onClick={handleAnchorClick}
+          startIcon={
+            <Iconify
+              icon="material-symbols:circle"
+              style={{
+                color: company && !companyError ? 'green' : 'red',
+                fontSize: '20px',
+                marginRight: '8px',
+              }}
+            />
+          }
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          Tally Status
+        </Button>
+      </Tooltip>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleAnchorClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <Typography sx={{ p: 2 }}>
+          {companyError ? companyError.error.message : `Company : ${company.name}`}
+        </Typography>
+      </Popover>
+    </>
+  );
 
   const renderContent = (
     <>
@@ -67,6 +141,7 @@ export default function Header({ onOpenNav }) {
 
         <ContactsPopover /> */}
 
+        {RenderTallyStatus}
         <SettingsButton />
 
         <AccountPopover />

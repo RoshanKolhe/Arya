@@ -70,6 +70,7 @@ export const endpoints = {
     list: '/api/users/list',
     details: (id) => `/api/users/${id}`,
     search: '/api/user/search',
+    company: '/api/getActiveCompany',
   },
   voucher: {
     list: '/api/vouchers/list',

@@ -45,3 +45,21 @@ export function useGetUser(userId) {
 
   return memoizedValue;
 }
+
+export function useGetTallyCompany() {
+  const URL = [endpoints.user.company];
+  console.log(URL);
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
+
+  const memoizedValue = useMemo(
+    () => ({
+      company: data,
+      companyLoading: isLoading,
+      companyError: error,
+      companyValidating: isValidating,
+    }),
+    [data, error, isLoading, isValidating]
+  );
+
+  return memoizedValue;
+}

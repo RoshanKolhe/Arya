@@ -1,10 +1,11 @@
 import {inject, Getter, Constructor} from '@loopback/core';
-import {DefaultCrudRepository, repository} from '@loopback/repository';
+import {DefaultCrudRepository, repository, BelongsToAccessor} from '@loopback/repository';
 import {AryaDataSource} from '../datasources';
-import {Voucher, VoucherRelations} from '../models';
+import {Voucher, VoucherRelations, User} from '../models';
 import {VoucherProductRepository} from './voucher-product.repository';
 import {ProductRepository} from './product.repository';
 import {TimeStampRepositoryMixin} from '../mixins/timestamp-repository-mixin';
+import {UserRepository} from './user.repository';
 
 export class VoucherRepository extends TimeStampRepositoryMixin<
   Voucher,
@@ -17,13 +18,18 @@ export class VoucherRepository extends TimeStampRepositoryMixin<
     >
   >
 >(DefaultCrudRepository) {
+
+  public readonly user: BelongsToAccessor<User, typeof Voucher.prototype.id>;
+
   constructor(
     @inject('datasources.arya') dataSource: AryaDataSource,
     @repository.getter('VoucherProductRepository')
     protected voucherProductRepositoryGetter: Getter<VoucherProductRepository>,
     @repository.getter('ProductRepository')
-    protected productRepositoryGetter: Getter<ProductRepository>,
+    protected productRepositoryGetter: Getter<ProductRepository>, @repository.getter('UserRepository') protected userRepositoryGetter: Getter<UserRepository>,
   ) {
     super(Voucher, dataSource);
+    this.user = this.createBelongsToAccessorFor('user', userRepositoryGetter,);
+    this.registerInclusionResolver('user', this.user.inclusionResolver);
   }
 }

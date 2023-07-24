@@ -239,6 +239,7 @@ export default function UserListView() {
                       tableData.map((row) => row.id)
                     )
                   }
+                  isCheckbox={false}
                 />
 
                 <TableBody>

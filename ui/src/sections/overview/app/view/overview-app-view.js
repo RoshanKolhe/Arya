@@ -11,6 +11,7 @@ import { _appFeatured, _appAuthors, _appInstalled, _appRelated, _appInvoices } f
 import { useSettingsContext } from 'src/components/settings';
 import { useAuthContext } from 'src/auth/hooks';
 import VoucherListView from 'src/sections/voucher/view/voucher-list-view';
+import Iconify from 'src/components/iconify/iconify';
 import { SeoIllustration } from '../../../../assets/illustrations';
 //
 import AppWidget from '../app-widget';
@@ -38,13 +39,17 @@ export default function OverviewAppView() {
         <Grid xs={12} md={12}>
           <AppWelcome
             title={`Welcome back 👋 \n ${user?.displayName}`}
-            description=""
+            description="To sync all products and ledgers from tally click on below sync button and make sure that tally is runnig "
             img={<SeoIllustration />}
-            // action={
-            //   <Button variant="contained" color="primary">
-            //     Go Now
-            //   </Button>
-            // }
+            action={
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Iconify icon="ci:arrows-reload-01" />}
+              >
+                Sync All
+              </Button>
+            }
           />
         </Grid>
 

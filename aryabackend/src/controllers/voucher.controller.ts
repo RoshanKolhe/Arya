@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import {inject} from '@loopback/core';
 import {TallyHttpCallService} from '../services/tally-http-call';
+import {UserProfile} from '@loopback/security';
 import {
   LedgerRepository,
   ProductRepository,
@@ -16,7 +17,7 @@ import {
   repository,
 } from '@loopback/repository';
 import {AryaDataSource} from '../datasources';
-import {authenticate} from '@loopback/authentication';
+import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {PermissionKeys} from '../authorization/permission-keys';
 import {HttpErrors, post, get, requestBody, param} from '@loopback/rest';
 import {Voucher} from '../models';
@@ -367,7 +368,82 @@ export class VoucherController {
   @get('/api/vouchers/list')
   async find(@param.filter(Voucher) filter?: Filter<Voucher>): Promise<any[]> {
     try {
-      const vouchers = await this.voucherRepository.find(filter);
+      const vouchers = await this.voucherRepository.find({
+        include: [
+          {
+            relation: 'user',
+            scope: {
+              fields: {
+                password: false,
+                otp: false,
+                otpExpireAt: false,
+              },
+            },
+          },
+        ],
+        ...filter,
+      });
+
+      const updatedVouchers = await Promise.all(
+        vouchers.map(async voucher => {
+          const voucherProducts = await this.voucherProductRepository.find({
+            where: {
+              voucherId: voucher.id,
+            },
+          });
+
+          const updatedVoucherProducts = await Promise.all(
+            voucherProducts.map(async voucherProduct => {
+              const productData = await this.productRepository.findOne({
+                where: {
+                  guid: voucherProduct.productId,
+                },
+              });
+
+              return {
+                productName: productData?.name,
+                productGuid: voucherProduct?.productId,
+                quantity: voucherProduct?.quantity,
+                rate: voucherProduct?.rate,
+                amount: voucherProduct?.amount,
+                discount: voucherProduct?.discount,
+                godown: voucherProduct?.godown,
+                _godown: voucherProduct?._godown,
+                notes: voucherProduct?.notes,
+              };
+            }),
+          );
+
+          return {
+            ...voucher,
+            products: updatedVoucherProducts,
+          };
+        }),
+      );
+
+      return updatedVouchers;
+    } catch (error) {
+      console.error('Error retrieving vouchers:', error);
+      throw new Error('Failed to retrieve vouchers');
+    }
+  }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
+  @get('/api/vouchers/user/list')
+  async getVoucherWithUser(
+    @inject(AuthenticationBindings.CURRENT_USER) currnetUser: UserProfile,
+    @param.filter(Voucher) filter?: Filter<Voucher>,
+  ): Promise<any[]> {
+    try {
+      const vouchers = await this.voucherRepository.find({
+        where: {
+          userId: currnetUser.id,
+        },
+        ...filter,
+      });
 
       const updatedVouchers = await Promise.all(
         vouchers.map(async voucher => {

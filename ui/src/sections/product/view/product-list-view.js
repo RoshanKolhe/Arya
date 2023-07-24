@@ -250,6 +250,7 @@ export default function ProductListView() {
                       tableData.map((row) => row.id)
                     )
                   }
+                  isCheckbox={false}
                 />
 
                 <TableBody>

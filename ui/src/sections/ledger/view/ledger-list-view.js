@@ -221,6 +221,7 @@ export default function LedgerListView() {
                       tableData.map((row) => row.id)
                     )
                   }
+                  isCheckbox={false}
                 />
 
                 <TableBody>
