@@ -173,6 +173,7 @@ export class VoucherController {
   })
   @post('/api/voucher/create')
   async create(
+    @inject(AuthenticationBindings.CURRENT_USER) currnetUser: UserProfile,
     @requestBody({})
     voucher: any,
   ): Promise<any> {
@@ -224,6 +225,7 @@ export class VoucherController {
         is_synced: 0,
         totalAmount: voucher.totalPrice,
         totalQuantity: voucher.totalQuantity,
+        userId: currnetUser.id,
       };
 
       const newVoucher = await this.voucherRepository.create(

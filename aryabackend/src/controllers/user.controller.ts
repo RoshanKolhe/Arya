@@ -313,7 +313,7 @@ export class UserController {
       return parsedXmlData;
     } catch (error) {
       console.log(error);
-      if (error.code === 'ECONNREFUSED') {
+      if (error.code === 'ECONNREFUSED' || error.code === 'EHOSTUNREACH') {
         // Handle the ECONNREFUSED error
         throw new HttpErrors.PreconditionFailed(
           'Failed to connect to the Tally server.',
