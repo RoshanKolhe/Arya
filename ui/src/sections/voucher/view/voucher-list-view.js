@@ -13,7 +13,7 @@ import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 // routes
 import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hook';
+import { usePathname, useRouter } from 'src/routes/hook';
 // _mock
 import { _orders, ORDER_STATUS_OPTIONS } from 'src/_mock';
 // utils
@@ -77,6 +77,8 @@ export default function VoucherListView() {
 
   const router = useRouter();
 
+  const pathname = usePathname();
+  console.log(pathname);
   const confirm = useBoolean();
   const { enqueueSnackbar } = useSnackbar();
   const [tableData, setTableData] = useState([]);
@@ -200,23 +202,25 @@ export default function VoucherListView() {
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-        <CustomBreadcrumbs
-          heading="List"
-          links={[
-            {
-              name: 'Dashboard',
-              href: paths.dashboard.root,
-            },
-            {
-              name: 'Voucher',
-              href: paths.dashboard.voucher.root,
-            },
-            { name: 'List' },
-          ]}
-          sx={{
-            mb: { xs: 3, md: 5 },
-          }}
-        />
+        {pathname === '/dashboard' ? null : (
+          <CustomBreadcrumbs
+            heading="List"
+            links={[
+              {
+                name: 'Dashboard',
+                href: paths.dashboard.root,
+              },
+              {
+                name: 'Voucher',
+                href: paths.dashboard.voucher.root,
+              },
+              { name: 'List' },
+            ]}
+            sx={{
+              mb: { xs: 3, md: 5 },
+            }}
+          />
+        )}
 
         <Card>
           {/* <Tabs

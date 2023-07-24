@@ -73,7 +73,6 @@ export default function VoucherNewEditForm({ currentVoucher }) {
 
   const {
     reset,
-
     handleSubmit,
     formState: { isSubmitting },
   } = methods;

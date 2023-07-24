@@ -33,7 +33,7 @@ export const SYNC_VOUCHERS_DATA_XML = (voucherData: any) => {
 
 function getVoucherItems(items: any) {
   const voucherProducts = items.map((item: any) => {
-    const amount = parseInt(item.quantity) * parseFloat(item.rate);
+    const amount = item.quantity * item.rate;
     return `<ALLINVENTORYENTRIES.LIST>
                          <STOCKITEMNAME>${item.productName}</STOCKITEMNAME>
                          <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
