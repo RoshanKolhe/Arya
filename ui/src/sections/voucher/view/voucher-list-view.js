@@ -93,8 +93,6 @@ export default function VoucherListView() {
       ? filters.startDate.getTime() > filters.endDate.getTime()
       : false;
 
-  console.log(dateError);
-
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
