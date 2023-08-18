@@ -33,24 +33,25 @@ export const SYNC_VOUCHERS_DATA_XML = (voucherData: any) => {
 
 function getVoucherItems(items: any) {
   const voucherProducts = items.map((item: any) => {
+    console.log(item);
     return `<ALLINVENTORYENTRIES.LIST>
                          <STOCKITEMNAME>${item.productName}</STOCKITEMNAME>
                          <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
                          <RATE>${item.rate}</RATE>
-                         <AMOUNT>${item.amount}</AMOUNT>
+                         <AMOUNT>${item.total}</AMOUNT>
                          <ACTUALQTY>${item.quantity}</ACTUALQTY>
                          <BILLEDQTY>${item.quantity}</BILLEDQTY>
                          <BATCHALLOCATIONS.LIST>
                              <GODOWNNAME>Main Location</GODOWNNAME>
                              <BATCHNAME>145</BATCHNAME>
-                             <AMOUNT>${item.amount}</AMOUNT>
+                             <AMOUNT>${item.total}</AMOUNT>
                              <ACTUALQTY>${item.quantity}</ACTUALQTY>
                              <BILLEDQTY>${item.quantity}</BILLEDQTY>
                          </BATCHALLOCATIONS.LIST>
                          <ACCOUNTINGALLOCATIONS.LIST>
                              <LEDGERNAME>Aarya Sales GST</LEDGERNAME>
                              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
-                             <AMOUNT>${item.amount}</AMOUNT>
+                             <AMOUNT>${item.total}</AMOUNT>
                          </ACCOUNTINGALLOCATIONS.LIST>
                      </ALLINVENTORYENTRIES.LIST>`;
   });

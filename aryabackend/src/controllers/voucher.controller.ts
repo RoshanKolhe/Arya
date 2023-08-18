@@ -144,11 +144,9 @@ export class VoucherController {
         },
       );
       const voucherPostXml = SYNC_VOUCHERS_DATA_XML(voucher);
-      console.log(voucherPostXml);
       const result: any = await this.tallyPostService.postTallyXML(
         voucherPostXml,
       );
-      console.log(result);
 
       const parsedCompanyXmlData =
         await this.tallyPostService.parseSuccessSyncVoucherData(result);
@@ -407,7 +405,7 @@ export class VoucherController {
                 productGuid: voucherProduct?.productId,
                 quantity: voucherProduct?.quantity,
                 rate: voucherProduct?.rate,
-                amount: voucherProduct?.amount,
+                total: voucherProduct?.amount,
                 discount: voucherProduct?.discount,
                 godown: voucherProduct?.godown,
                 _godown: voucherProduct?._godown,
@@ -468,7 +466,7 @@ export class VoucherController {
                 productGuid: voucherProduct?.productId,
                 quantity: voucherProduct?.quantity,
                 rate: voucherProduct?.rate,
-                amount: voucherProduct?.amount,
+                total: voucherProduct?.amount,
                 discount: voucherProduct?.discount,
                 godown: voucherProduct?.godown,
                 _godown: voucherProduct?._godown,
@@ -523,7 +521,7 @@ export class VoucherController {
             productGuid: voucherProduct?.productId,
             quantity: voucherProduct?.quantity,
             rate: voucherProduct?.rate,
-            amount: voucherProduct?.amount,
+            total: voucherProduct?.amount,
             discount: voucherProduct?.discount,
             godown: voucherProduct?.godown,
             _godown: voucherProduct?._godown,

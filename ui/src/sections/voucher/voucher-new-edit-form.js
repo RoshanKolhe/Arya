@@ -58,6 +58,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
           service: '',
           quantity: 1,
           rate: 0,
+          discount: 0,
           total: 0,
         },
       ],
@@ -138,7 +139,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
         shipping: shipping || 0,
         status: is_synced || 0,
         discount: discount || 0,
-        items: products || [{ name: '', notes: '', quantity: 1, rate: 0, total: 0 }],
+        items: products || [{ name: '', notes: '', quantity: 1, rate: 0, discount: 0, total: 0 }],
         totalAmount: totalAmount || 0,
       };
       // Set the form values using the setValue method from react-hook-form

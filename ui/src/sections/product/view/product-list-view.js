@@ -47,9 +47,9 @@ import ProductTableFiltersResult from '../product-table-filters-result';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Product' },
-  { id: 'uom', label: 'Quantity', width: 160 },
-  { id: 'opening_rate', label: 'Rate', width: 140 },
-  { id: 'opening_value', label: 'Value', width: 110 },
+  // { id: 'uom', label: 'Quantity', width: 160 },
+  // { id: 'opening_rate', label: 'Rate', width: 140 },
+  // { id: 'opening_value', label: 'Value', width: 110 },
 ];
 
 const PUBLISH_OPTIONS = [

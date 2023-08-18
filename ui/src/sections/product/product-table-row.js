@@ -68,7 +68,7 @@ export default function ProductTableRow({
           />
         </TableCell>
 
-        <TableCell>
+        {/* <TableCell>
           <Typography variant="subtitle">{uom}</Typography>
         </TableCell>
         <TableCell>
@@ -76,7 +76,7 @@ export default function ProductTableRow({
         </TableCell>
         <TableCell>
           <Typography variant="subtitle">{opening_value}</Typography>
-        </TableCell>
+        </TableCell> */}
 
         {/* <TableCell align="right">
           <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>

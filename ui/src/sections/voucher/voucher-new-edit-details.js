@@ -26,20 +26,21 @@ export default function VoucherNewEditDetails() {
   const { control, setValue, watch, resetField } = useFormContext();
 
   const { products, productsLoading, productsEmpty } = useGetProducts();
-
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'items',
   });
+
   const values = watch();
 
   const totalOnRow = values.items.map((item) => item.quantity * item.rate);
 
   const subTotal = sum(totalOnRow);
 
-  const totalAmount = subTotal - values.discount - values.shipping + values.taxes;
-
+  const totalAmount = values.items.reduce((acc, item) => acc + item.total, 0);
+  console.log(values);
   useEffect(() => {
+    console.log('here');
     setValue('totalAmount', totalAmount);
   }, [setValue, totalAmount]);
 
@@ -49,6 +50,7 @@ export default function VoucherNewEditDetails() {
       notes: '',
       quantity: 1,
       rate: 0,
+      discount: 0,
       total: 0,
     });
   };
@@ -79,6 +81,23 @@ export default function VoucherNewEditDetails() {
     [setValue, values.items]
   );
 
+  const handleChangeDiscount = useCallback(
+    (event, index) => {
+      const newDiscount = parseFloat(event.target.value) || 0;
+      console.log(newDiscount);
+      setValue(`items[${index}].discount`, newDiscount);
+
+      const item = values.items[index];
+      const newTotal = item.quantity * item.rate;
+
+      // Calculate the discounted total based on the new discount
+      const discountAmount = (newDiscount / 100) * newTotal;
+      const discountedTotal = newTotal - discountAmount;
+      setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
+    },
+    [setValue, values.items]
+  );
+
   const handleChangeNote = useCallback(
     (event, index) => {
       setValue(`items[${index}].notes`, event.target.value);
@@ -92,10 +111,10 @@ export default function VoucherNewEditDetails() {
       alignItems="flex-end"
       sx={{ mt: 3, textAlign: 'right', typography: 'body2' }}
     >
-      <Stack direction="row">
+      {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Subtotal</Box>
         <Box sx={{ width: 160, typography: 'subtitle2' }}>{fCurrency(subTotal) || '-'}</Box>
-      </Stack>
+      </Stack> */}
 
       {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Shipping</Box>
@@ -109,7 +128,7 @@ export default function VoucherNewEditDetails() {
         </Box>
       </Stack> */}
 
-      <Stack direction="row">
+      {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Discount</Box>
         <Box
           sx={{
@@ -119,7 +138,7 @@ export default function VoucherNewEditDetails() {
         >
           {values.discount ? `- ${fCurrency(values.discount)}` : '-'}
         </Box>
-      </Stack>
+      </Stack> */}
 
       {/* <Stack direction="row">
         <Box sx={{ color: 'text.secondary' }}>Taxes</Box>
@@ -181,17 +200,6 @@ export default function VoucherNewEditDetails() {
               <RHFTextField
                 size="small"
                 type="number"
-                name={`items[${index}].quantity`}
-                label="Quantity"
-                placeholder="0"
-                onChange={(event) => handleChangeQuantity(event, index)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ maxWidth: { md: 96 } }}
-              />
-
-              <RHFTextField
-                size="small"
-                type="number"
                 name={`items[${index}].rate`}
                 label="Price"
                 placeholder="0.00"
@@ -207,17 +215,41 @@ export default function VoucherNewEditDetails() {
               />
 
               <RHFTextField
+                size="small"
+                type="number"
+                name={`items[${index}].quantity`}
+                label="Quantity"
+                placeholder="0"
+                onChange={(event) => handleChangeQuantity(event, index)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ maxWidth: { md: 96 } }}
+              />
+
+              <RHFTextField
+                size="small"
+                type="number"
+                name={`items[${index}].discount`}
+                label="Discount"
+                placeholder="0.00"
+                onChange={(event) => handleChangeDiscount(event, index)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>%</Box>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ maxWidth: { md: 96 } }}
+              />
+
+              <RHFTextField
                 disabled
                 size="small"
                 type="number"
                 name={`items[${index}].total`}
                 label="Total"
                 placeholder="0.00"
-                value={
-                  values.items[index].total === 0
-                    ? ''
-                    : (values.items[index].quantity * values.items[index].rate).toFixed(2)
-                }
+                value={values.items[index].total === 0 ? '' : values.items[index].total}
                 onChange={(event) => handleChangePrice(event, index)}
                 InputProps={{
                   startAdornment: (

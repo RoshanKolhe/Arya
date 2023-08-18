@@ -71,7 +71,6 @@ export default function Header({ onOpenNav }) {
 
   const open = Boolean(anchorEl);
   const id = open ? 'tally-status' : undefined;
-  console.log(companyError);
   const RenderTallyStatus = (
     <>
       <Tooltip
@@ -110,7 +109,7 @@ export default function Header({ onOpenNav }) {
         }}
       >
         <Typography sx={{ p: 2 }}>
-          {!company && companyError ? companyError.error.message : `Company : ${company?.name}`}
+          {!company && companyError ? companyError?.error?.message : `Company : ${company?.name}`}
         </Typography>
       </Popover>
     </>

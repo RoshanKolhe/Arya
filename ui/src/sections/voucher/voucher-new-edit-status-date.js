@@ -32,7 +32,6 @@ export default function VoucherNewEditStatusDate() {
         fullWidth
         name="party_name"
         label="Party A/c Name"
-        disabled
         InputLabelProps={{ shrink: true }}
         PaperPropsSx={{ textTransform: 'capitalize' }}
       >

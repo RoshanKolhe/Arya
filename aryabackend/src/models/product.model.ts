@@ -1,18 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {UnitOfMeasure} from './unit-of-measure.model';
 
 @model()
 export class Product extends Entity {
   @property({
-    type: 'number',
-    id: true,
-    generated: true,
-  })
-  id?: number;
-
-  @property({
     type: 'string',
     required: true,
+    id: true,
   })
   guid: string;
 
@@ -52,11 +47,11 @@ export class Product extends Entity {
   })
   uom: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  _uom: string;
+  // @property({
+  //   type: 'string',
+  //   required: true,
+  // })
+  // _uom: string;
 
   @property({
     type: 'number',
@@ -67,7 +62,7 @@ export class Product extends Entity {
     scale: 2,
   })
   opening_balance?: number;
-  
+
   @property({
     type: 'number',
     required: true,
@@ -77,7 +72,7 @@ export class Product extends Entity {
     scale: 2,
   })
   opening_rate?: number;
-  
+
   @property({
     type: 'number',
     required: true,
@@ -87,7 +82,7 @@ export class Product extends Entity {
     scale: 2,
   })
   opening_value?: number;
-  
+
   @property({
     type: 'string',
   })
@@ -112,6 +107,9 @@ export class Product extends Entity {
     type: 'date',
   })
   updatedAt?: Date;
+
+  @belongsTo(() => UnitOfMeasure)
+  unitOfMeasureId: string;
 
   constructor(data?: Partial<Product>) {
     super(data);

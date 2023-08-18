@@ -16,6 +16,7 @@ export async function migrate(args: string[]) {
       'Ledger',
       'Voucher',
       'VoucherProduct',
+      'UnitOfMeasure',
     ],
   });
 

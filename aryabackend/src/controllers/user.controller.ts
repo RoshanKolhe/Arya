@@ -305,7 +305,7 @@ export class UserController {
     options: {required: [PermissionKeys.SALES]},
   })
   @get('/api/getActiveCompany')
-  async getActiveCompant(): Promise<any> {
+  async getActiveCompany(): Promise<any> {
     try {
       const tallyXml = ACTIVE_COMPANY_TALLY_XML();
       const res: any = await this.tallyPostService.postTallyXML(tallyXml);

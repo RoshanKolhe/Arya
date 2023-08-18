@@ -60,13 +60,17 @@ const TABLE_HEAD = [
   { id: '', width: 88 },
 ];
 
+console.log(new Date().setHours(0, 0, 0, 0));
+console.log(new Date().setHours(23, 59, 59, 999));
+
 const defaultFilters = {
   party_name: '',
   status: 'all',
   startDate: new Date(),
   endDate: new Date(),
 };
-
+defaultFilters.startDate.setHours(0, 0, 0, 0);
+defaultFilters.endDate.setHours(23, 59, 59, 999);
 // ----------------------------------------------------------------------
 
 export default function VoucherListView() {
@@ -84,11 +88,12 @@ export default function VoucherListView() {
   const { vouchers, vouchersLoading, vouchersEmpty, refreshVouchers } = useGetVouchers();
 
   const [filters, setFilters] = useState(defaultFilters);
-
   const dateError =
     filters.startDate && filters.endDate
       ? filters.startDate.getTime() > filters.endDate.getTime()
       : false;
+
+  console.log(dateError);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -201,7 +206,10 @@ export default function VoucherListView() {
 
   return (
     <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <Container
+        maxWidth={settings.themeStretch ? false : 'lg'}
+        style={pathname === '/dashboard' ? { padding: 0, maxWidth: 'initial' } : {}}
+      >
         {pathname === '/dashboard' ? null : (
           <CustomBreadcrumbs
             heading="List"
@@ -297,11 +305,18 @@ export default function VoucherListView() {
                 )
               }
               action={
-                <Tooltip title="Delete">
-                  <IconButton color="primary" onClick={confirm.onTrue}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
-                  </IconButton>
-                </Tooltip>
+                <>
+                  <Tooltip title="Sync All">
+                    <IconButton color="primary" onClick={confirm.onTrue}>
+                      <Iconify icon="ic:outline-sync" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton color="primary" onClick={confirm.onTrue}>
+                      <Iconify icon="solar:trash-bin-trash-bold" />
+                    </IconButton>
+                  </Tooltip>
+                </>
               }
             />
 
@@ -432,11 +447,13 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   if (!dateError) {
     if (startDate && endDate) {
-      inputData = inputData.filter(
-        (order) =>
-          fTimestamp(order.createdAt) >= fTimestamp(startDate) &&
-          fTimestamp(order.createdAt) <= fTimestamp(endDate)
-      );
+      inputData = inputData.filter((order) => {
+        const orderDate = new Date(order.createdAt);
+
+        const isWithinRange = orderDate >= startDate && orderDate <= endDate;
+
+        return isWithinRange;
+      });
     }
   }
 

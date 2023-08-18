@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import {
   Count,
@@ -19,14 +20,15 @@ import {
   response,
   HttpErrors,
 } from '@loopback/rest';
-import {Product} from '../models';
-import {ProductRepository} from '../repositories';
+import {Product, UnitOfMeasure} from '../models';
+import {ProductRepository, UnitOfMeasureRepository} from '../repositories';
 import {inject} from '@loopback/core';
 import {AryaDataSource} from '../datasources';
 import {TallyHttpCallService} from '../services/tally-http-call';
 import {STOCK_ITEM_XML} from '../helpers/getProductsTallyXml';
 import {authenticate} from '@loopback/authentication';
 import {PermissionKeys} from '../authorization/permission-keys';
+import {MASTER_UOM_XML} from '../helpers/getMasterUom';
 
 export class ProductController {
   constructor(
@@ -34,6 +36,8 @@ export class ProductController {
     public dataSource: AryaDataSource,
     @repository(ProductRepository)
     public productRepository: ProductRepository,
+    @repository(UnitOfMeasureRepository)
+    public uomRepository: UnitOfMeasureRepository,
     @inject('service.tally.service')
     public tallyPostService: TallyHttpCallService,
   ) {}
@@ -110,13 +114,24 @@ export class ProductController {
   async syncProducts(): Promise<any> {
     try {
       const tallyXml = STOCK_ITEM_XML();
+      const uomXml = MASTER_UOM_XML();
       const res: any = await this.tallyPostService.postTallyXML(tallyXml);
+      const uomRes: any = await this.tallyPostService.postTallyXML(uomXml);
+
       const parsedXmlData = await this.tallyPostService.parseXmlToObjects(res);
+      const parsedUomData =
+        await this.tallyPostService.parseXmlUomToObjectArray(uomRes);
+      // const data = parsedXmlData.BODY[0].DATA[0].TALLYMESSAGE;
+      // const filteredData = data.filter((item:any) => 'STOCKITEM' in item);
       const repo = new DefaultTransactionalRepository(Product, this.dataSource);
       const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
 
       try {
         await this.productRepository.deleteAll(undefined, {
+          transaction: tx,
+        });
+
+        await this.uomRepository.deleteAll(undefined, {
           transaction: tx,
         });
 
@@ -130,7 +145,7 @@ export class ProductController {
             mappedProduct._parent = product._PARENT || ' ';
             mappedProduct.alias = product.ALIAS || null;
             mappedProduct.uom = product.UOM;
-            mappedProduct._uom = product._UOM || ' ';
+            mappedProduct.unitOfMeasureId = product._UOM || ' ';
             mappedProduct.opening_balance = product.OPENINGBALANCE || 0;
             mappedProduct.opening_rate = product.OPENINGRATE || 0;
             mappedProduct.opening_value = product.OPENINGVALUE || 0;
@@ -142,7 +157,27 @@ export class ProductController {
           },
         );
 
+        const finalMappedUomObject: UnitOfMeasure[] = parsedUomData.map(
+          (unitOfMeasure: any) => {
+            const mappedUom: UnitOfMeasure = new UnitOfMeasure();
+            mappedUom.guid = unitOfMeasure.GUID;
+            mappedUom.alterid = unitOfMeasure.ALTERID;
+            mappedUom.name = unitOfMeasure.NAME;
+            mappedUom.formalName = unitOfMeasure.FORMALNAME || ' ';
+            mappedUom.isSimpleUnit = unitOfMeasure.ISSIMPLEUNIT;
+            mappedUom.baseUnits = unitOfMeasure.BASEUNITS || ' ';
+            mappedUom.additionalUnits = unitOfMeasure.ADDITIONALUNITS || ' ';
+            mappedUom.conversion = unitOfMeasure.CONVERSION;
+
+            return mappedUom;
+          },
+        );
+
         await this.productRepository.createAll(finalMappedObject, {
+          transaction: tx,
+        });
+
+        await this.uomRepository.createAll(finalMappedUomObject, {
           transaction: tx,
         });
 
@@ -154,12 +189,14 @@ export class ProductController {
           message: 'Sync successful',
         };
       } catch (err) {
+        console.log(err);
         await tx.rollback();
         throw new Error(
           'Error synchronizing products. Transaction rolled back.',
         );
       }
     } catch (error) {
+      console.log(error);
       throw new HttpErrors.PreconditionFailed(error.message);
     }
   }
@@ -172,7 +209,14 @@ export class ProductController {
   async find(
     @param.filter(Product) filter?: Filter<Product>,
   ): Promise<Product[]> {
-    return this.productRepository.find(filter);
+    return this.productRepository.find({
+      include: [
+        {
+          relation: 'unitOfMeasure',
+        },
+      ],
+      ...filter,
+    });
   }
 
   @authenticate({

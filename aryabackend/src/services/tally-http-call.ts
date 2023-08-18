@@ -74,6 +74,16 @@ interface Ledger {
   guid: string;
   openingBalance: number;
 }
+interface ParsedObject {
+  GUID: string;
+  ALTERID: string;
+  NAME: string;
+  FORMALNAME: string;
+  ISSIMPLEUNIT: string;
+  BASEUNITS: string;
+  ADDITIONALUNITS: string;
+  CONVERSION: string;
+}
 
 export class TallyHttpCallService {
   constructor() {}
@@ -129,6 +139,7 @@ export class TallyHttpCallService {
           const productArray = [];
 
           const numProducts = envelope.GUID.length;
+          
           for (let i = 0; i < numProducts; i++) {
             const product: Product = {
               GUID: envelope.GUID[i],
@@ -148,7 +159,6 @@ export class TallyHttpCallService {
             };
             productArray.push(product);
           }
-
           resolve(productArray);
         }
       });
@@ -264,6 +274,37 @@ export class TallyHttpCallService {
 
           // You can return an array of objects if you expect multiple responses in the future
           resolve(parsedResponse);
+        }
+      });
+    });
+  }
+
+  parseXmlUomToObjectArray(xml: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      parseString(xml, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const envelope = result.ENVELOPE;
+          const uomArray = [];
+
+          const numUoms = envelope.GUID.length;
+          console.log('numUoms', numUoms);
+
+          for (let i = 0; i < numUoms; i++) {
+            const obj: ParsedObject = {
+              GUID: result.ENVELOPE.GUID[i],
+              ALTERID: result.ENVELOPE.ALTERID[i],
+              NAME: result.ENVELOPE.NAME[i],
+              FORMALNAME: result.ENVELOPE.FORMALNAME[i],
+              ISSIMPLEUNIT: result.ENVELOPE.ISSIMPLEUNIT[i],
+              BASEUNITS: result.ENVELOPE.BASEUNITS[i],
+              ADDITIONALUNITS: result.ENVELOPE.ADDITIONALUNITS[i],
+              CONVERSION: result.ENVELOPE.CONVERSION[i],
+            };
+            uomArray.push(obj);
+          }
+          resolve(uomArray);
         }
       });
     });
