@@ -1,29 +1,20 @@
 // @mui
-import { useTheme } from '@mui/material/styles';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
+import { useTheme } from '@mui/material/styles';
 // _mock
-import { _appFeatured, _appAuthors, _appInstalled, _appRelated, _appInvoices } from 'src/_mock';
 // components
 // assets
-import { useSettingsContext } from 'src/components/settings';
 import { useAuthContext } from 'src/auth/hooks';
-import VoucherListView from 'src/sections/voucher/view/voucher-list-view';
 import Iconify from 'src/components/iconify/iconify';
-import { SeoIllustration } from '../../../../assets/illustrations';
+import { useSettingsContext } from 'src/components/settings';
+import VoucherListView from 'src/sections/voucher/view/voucher-list-view';
 //
-import AppWidget from '../app-widget';
+import { useSnackbar } from 'notistack';
+import axiosInstance, { endpoints } from 'src/utils/axios';
+import { SeoIllustration } from '../../../../assets/illustrations';
 import AppWelcome from '../app-welcome';
-import AppNewInvoice from '../app-new-invoice';
-import AppTopAuthors from '../app-top-authors';
-import AppTopRelated from '../app-top-related';
-import AppAreaInstalled from '../app-area-installed';
-import AppWidgetSummary from '../app-widget-summary';
-import AppCurrentDownload from '../app-current-download';
-import AppTopInstalledCountries from '../app-top-installed-countries';
-
 // ----------------------------------------------------------------------
 
 export default function OverviewAppView() {
@@ -32,6 +23,36 @@ export default function OverviewAppView() {
   const theme = useTheme();
 
   const settings = useSettingsContext();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleSyncAll = () => {
+    // Logic for syncing ledgers
+    axiosInstance
+      .post(endpoints.ledger.sync)
+      .then((ledgerRes) => {
+        const ledgerData = ledgerRes.data;
+        enqueueSnackbar(ledgerData?.message || 'Ledger sync successful');
+
+        // Logic for syncing products after ledger sync
+        axiosInstance
+          .post(endpoints.product.sync)
+          .then((productRes) => {
+            const productData = productRes.data;
+            enqueueSnackbar(productData?.message || 'Product sync successful');
+          })
+          .catch((productErr) => {
+            console.log(productErr);
+            enqueueSnackbar(productErr?.error?.message || 'Error syncing products', {
+              variant: 'error',
+            });
+          });
+      })
+      .catch((ledgerErr) => {
+        console.log(ledgerErr);
+        enqueueSnackbar(ledgerErr?.error?.message || 'Error syncing ledgers', { variant: 'error' });
+      });
+  };
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -45,6 +66,7 @@ export default function OverviewAppView() {
               <Button
                 variant="contained"
                 color="primary"
+                onClick={handleSyncAll}
                 startIcon={<Iconify icon="ci:arrows-reload-01" />}
               >
                 Sync All
