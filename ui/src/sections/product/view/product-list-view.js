@@ -1,53 +1,53 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // @mui
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
+import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
-import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
+import Tooltip from '@mui/material/Tooltip';
 // routes
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hook';
 import { RouterLink } from 'src/routes/components';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // _mock
 import { PRODUCT_STOCK_OPTIONS } from 'src/_mock';
 // api
 // components
-import { useSettingsContext } from 'src/components/settings';
-import {
-  useTable,
-  getComparator,
-  emptyRows,
-  TableNoData,
-  TableSkeleton,
-  TableEmptyRows,
-  TableHeadCustom,
-  TableSelectedAction,
-  TablePaginationCustom,
-} from 'src/components/table';
+import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import { useSettingsContext } from 'src/components/settings';
+import {
+  TableEmptyRows,
+  TableHeadCustom,
+  TableNoData,
+  TablePaginationCustom,
+  TableSelectedAction,
+  TableSkeleton,
+  emptyRows,
+  getComparator,
+  useTable,
+} from 'src/components/table';
 //
+import { useSnackbar } from 'notistack';
 import { useGetProducts } from 'src/api/product';
 import axiosInstance, { endpoints } from 'src/utils/axios';
-import { useSnackbar } from 'notistack';
+import ProductTableFiltersResult from '../product-table-filters-result';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
-import ProductTableFiltersResult from '../product-table-filters-result';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Product' },
-  // { id: 'uom', label: 'Quantity', width: 160 },
+  { id: 'price', label: 'Price', width: 160 },
   // { id: 'opening_rate', label: 'Rate', width: 140 },
   // { id: 'opening_value', label: 'Value', width: 110 },
 ];
@@ -345,9 +345,16 @@ function applyFilter({ inputData, comparator, filters }) {
   inputData = stabilizedThis.map((el) => el[0]);
 
   if (name) {
-    inputData = inputData.filter(
-      (product) => product.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
-    );
+    inputData = inputData.filter((product) => {
+      const lowerCaseName = product.name.toLowerCase();
+      const lowerCaseParent = product.parent.toLowerCase();
+      const lowerCaseSearchTerm = name.toLowerCase();
+
+      return (
+        lowerCaseName.indexOf(lowerCaseSearchTerm) !== -1 ||
+        lowerCaseParent.indexOf(lowerCaseSearchTerm) !== -1
+      );
+    });
   }
 
   if (stock.length) {

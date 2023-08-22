@@ -218,7 +218,7 @@ export default function VoucherNewEditDetails() {
                 size="small"
                 type="number"
                 name={`items[${index}].quantity`}
-                label="Quantity"
+                label="Pcs"
                 placeholder="0"
                 onChange={(event) => handleChangeQuantity(event, index)}
                 InputLabelProps={{ shrink: true }}

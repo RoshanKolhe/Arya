@@ -33,7 +33,8 @@ export default function ProductTableRow({
   onEditRow,
   onViewRow,
 }) {
-  const { name, opening_rate, uom, opening_value, parent, quantity, available, inventoryType } = row;
+  const { name, opening_rate, uom, opening_value, parent, quantity, available, inventoryType } =
+    row;
 
   const confirm = useBoolean();
 
@@ -68,10 +69,10 @@ export default function ProductTableRow({
           />
         </TableCell>
 
-        {/* <TableCell>
-          <Typography variant="subtitle">{uom}</Typography>
-        </TableCell>
         <TableCell>
+          <Typography variant="subtitle">{100}</Typography>
+        </TableCell>
+        {/*  <TableCell>
           <Typography variant="subtitle">{opening_rate}</Typography>
         </TableCell>
         <TableCell>

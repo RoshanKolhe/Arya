@@ -1,11 +1,13 @@
-import { useFormContext, Controller } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 // @mui
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Stack from '@mui/material/Stack';
+import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // components
-import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import { useGetLedgers } from 'src/api/ledger';
+import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -28,19 +30,28 @@ export default function VoucherNewEditStatusDate() {
         value={values.voucherNumber}
       />
 
-      <RHFSelect
-        fullWidth
-        name="party_name"
+      <Autocomplete
+        // name={`items[${index}].productName`}
         label="Party A/c Name"
-        InputLabelProps={{ shrink: true }}
-        PaperPropsSx={{ textTransform: 'capitalize' }}
-      >
-        {ledgers.map((option) => (
-          <MenuItem key={option.name} value={option.guid}>
-            {option.name}
-          </MenuItem>
-        ))}
-      </RHFSelect>
+        fullWidth
+        name={values.party_name}
+        options={ledgers ? ledgers.map((option) => option.name) : []}
+        // getOptionLabel={(option) => option}
+        renderInput={(params) => <TextField {...params} label="Party A/c Name" />}
+        // renderOption={(props, option) => {
+        //   const { name, id, guid } = ledgers.filter((ledger) => ledger.name === option)[0];
+
+        //   if (!name) {
+        //     return null;
+        //   }
+
+        //   return (
+        //     <li {...props} key={id}>
+        //       {name}
+        //     </li>
+        //   );
+        // }}
+      />
 
       <RHFSelect
         fullWidth

@@ -51,7 +51,7 @@ const STATUS_OPTIONS = [{ value: 'all', label: 'All' }];
 
 const TABLE_HEAD = [
   { id: 'id', label: 'Order', width: 116 },
-  { id: 'name', label: 'Customer' },
+  { id: 'party_name', label: 'Customer' },
   { id: 'date', label: 'Voucher Date', width: 140 },
   { id: 'totalQuantity', label: 'Quantity', width: 140 },
   { id: 'totalAmount', label: 'Price', width: 140 },
