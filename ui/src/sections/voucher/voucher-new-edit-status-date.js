@@ -30,7 +30,21 @@ export default function VoucherNewEditStatusDate() {
         value={values.voucherNumber}
       />
 
-      <Autocomplete
+      <RHFSelect
+        fullWidth
+        name="party_name"
+        label="Party A/c Name"
+        InputLabelProps={{ shrink: true }}
+        PaperPropsSx={{ textTransform: 'capitalize' }}
+      >
+        {ledgers.map((option) => (
+          <MenuItem key={option.name} value={option.guid}>
+            {option.name}
+          </MenuItem>
+        ))}
+      </RHFSelect>
+
+      {/* <Autocomplete
         // name={`items[${index}].productName`}
         label="Party A/c Name"
         fullWidth
@@ -51,7 +65,7 @@ export default function VoucherNewEditStatusDate() {
         //     </li>
         //   );
         // }}
-      />
+      /> */}
 
       <RHFSelect
         fullWidth

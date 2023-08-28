@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import http from 'http';
 import {parseString, parseStringPromise} from 'xml2js';
-import { Ledger, ParsedObject, ParsedResponse, Product, Voucher } from '../utils/constants';
-
+import {
+  Ledger,
+  ParsedObject,
+  ParsedResponse,
+  Product,
+  Voucher,
+} from '../utils/constants';
 
 export class TallyHttpCallService {
   constructor() {}
@@ -223,6 +229,83 @@ export class TallyHttpCallService {
             uomArray.push(obj);
           }
           resolve(uomArray);
+        }
+      });
+    });
+  }
+
+  parseExtraStockXmlToObjects(xmlData: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      parseString(xmlData, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const envelope = result.ENVELOPE;
+          const productArray = [];
+          const data = envelope.BODY[0].DATA[0].TALLYMESSAGE;
+          const filteredData = data.filter((item: any) => 'STOCKITEM' in item);
+          const numProducts = filteredData.length;
+          for (let i = 0; i < numProducts; i++) {
+            const stateWiseGst =
+              filteredData[i].STOCKITEM[0]['GSTDETAILS.LIST'][
+                filteredData[i].STOCKITEM[0]['GSTDETAILS.LIST'].length - 1
+              ]['STATEWISEDETAILS.LIST'];
+            const batchDetails =
+              filteredData[i].STOCKITEM[0]['BATCHALLOCATIONS.LIST'];
+            const mainLocationBatchObject =
+              batchDetails && batchDetails.length === 2
+                ? batchDetails.filter(
+                    (item: any) => item.GODOWNNAME[0] === 'Main Location',
+                  )
+                : null;
+
+            const retailerMargin = filteredData[i].STOCKITEM[0][
+              'UDF:_UDF_671088731.LIST'
+            ]
+              ? filteredData[i].STOCKITEM[0]['UDF:_UDF_671088731.LIST'][0][
+                  'UDF:_UDF_671088731'
+                ][0]['_']
+              : 0;
+            const distributorMargin = filteredData[i].STOCKITEM[0][
+              'UDF:_UDF_671088732.LIST'
+            ]
+              ? filteredData[i].STOCKITEM[0]['UDF:_UDF_671088732.LIST'][0][
+                  'UDF:_UDF_671088732'
+                ][0]['_']
+              : 0;
+            const cgst = stateWiseGst
+              ? stateWiseGst[0]['RATEDETAILS.LIST'][0]['GSTRATE'][0]
+              : '0';
+            const sgstOrUtgst = stateWiseGst
+              ? stateWiseGst[0]['RATEDETAILS.LIST'][1]['GSTRATE'][0]
+              : '0';
+            const igst = stateWiseGst
+              ? stateWiseGst[0]['RATEDETAILS.LIST'][2]['GSTRATE'][0]
+              : '0';
+            const cess = stateWiseGst
+              ? stateWiseGst[0]['RATEDETAILS.LIST'][3]['GSTRATE'][0]
+              : '0';
+            const stateCess = stateWiseGst
+              ? stateWiseGst[0]['RATEDETAILS.LIST'][3]['GSTRATE'][0]
+              : '0';
+            const productExtra: any = {
+              guid: filteredData[i].STOCKITEM[0].GUID[0],
+              cgst: cgst.trim(),
+              sgstOrUtgst: sgstOrUtgst.trim(),
+              igst: igst.trim(),
+              cess: cess.trim(),
+              stateCess: stateCess.trim(),
+              retailerMargin: retailerMargin ? retailerMargin.trim() : '0',
+              distributorMargin: distributorMargin
+                ? distributorMargin.trim()
+                : '0',
+              batchName: mainLocationBatchObject
+                ? mainLocationBatchObject[0].BATCHNAME[0]
+                : 0,
+            };
+            productArray.push(productExtra);
+          }
+          resolve(productArray);
         }
       });
     });

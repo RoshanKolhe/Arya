@@ -29,6 +29,7 @@ import {STOCK_ITEM_XML} from '../helpers/getProductsTallyXml';
 import {authenticate} from '@loopback/authentication';
 import {PermissionKeys} from '../authorization/permission-keys';
 import {MASTER_UOM_XML} from '../helpers/getMasterUom';
+import {STOCK_ITEM_EXTRA_XML} from '../helpers/getProductExtraDetailsXml';
 
 export class ProductController {
   constructor(
@@ -114,15 +115,21 @@ export class ProductController {
   async syncProducts(): Promise<any> {
     try {
       const tallyXml = STOCK_ITEM_XML();
+      const stockItemExtraXml = STOCK_ITEM_EXTRA_XML();
       const uomXml = MASTER_UOM_XML();
       const res: any = await this.tallyPostService.postTallyXML(tallyXml);
+      const stockItemExtraData = await this.tallyPostService.postTallyXML(
+        stockItemExtraXml,
+      );
       const uomRes: any = await this.tallyPostService.postTallyXML(uomXml);
 
       const parsedXmlData = await this.tallyPostService.parseXmlToObjects(res);
       const parsedUomData =
         await this.tallyPostService.parseXmlUomToObjectArray(uomRes);
-      // const data = parsedXmlData.BODY[0].DATA[0].TALLYMESSAGE;
-      // const filteredData = data.filter((item:any) => 'STOCKITEM' in item);
+      const parsedStockExtraXmlData =
+        await this.tallyPostService.parseExtraStockXmlToObjects(
+          stockItemExtraData,
+        );
       const repo = new DefaultTransactionalRepository(Product, this.dataSource);
       const tx = await repo.beginTransaction(IsolationLevel.READ_COMMITTED);
 
@@ -137,6 +144,9 @@ export class ProductController {
 
         const finalMappedObject: Product[] = parsedXmlData.map(
           (product: any) => {
+            const filteredObject = parsedStockExtraXmlData.filter(
+              (stockItem: any) => stockItem.guid === product.GUID,
+            );
             const mappedProduct: Product = new Product();
             mappedProduct.guid = product.GUID;
             mappedProduct.alterid = product.ALTERID;
@@ -152,6 +162,15 @@ export class ProductController {
             mappedProduct.gst_nature_of_goods = product.NATUREOFGOODS || null;
             mappedProduct.gst_hsn_code = product.HSNCODE || null;
             mappedProduct.gst_taxability = product.TAXABILITY || null;
+            mappedProduct.cgst = filteredObject[0].cgst;
+            mappedProduct.sgstOrUtgst = filteredObject[0].sgstOrUtgst;
+            mappedProduct.cess = filteredObject[0].cess;
+            mappedProduct.igst = filteredObject[0].igst;
+            mappedProduct.stateCess = filteredObject[0].stateCess;
+            mappedProduct.retailerMargin = filteredObject[0].retailerMargin;
+            mappedProduct.distributorMargin =
+              filteredObject[0].distributorMargin;
+            mappedProduct.batchName = filteredObject[0].batchName;
 
             return mappedProduct;
           },
@@ -191,6 +210,42 @@ export class ProductController {
       } catch (err) {
         console.log(err);
         await tx.rollback();
+        throw new Error(
+          'Error synchronizing products. Transaction rolled back.',
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new HttpErrors.PreconditionFailed(error.message);
+    }
+  }
+
+  @authenticate({
+    strategy: 'jwt',
+    options: {required: [PermissionKeys.SALES]},
+  })
+  @post('/api/syncProductsExtraDummy')
+  async syncProductsExtraDummy(): Promise<any> {
+    try {
+      const stockItemExtraXml = STOCK_ITEM_EXTRA_XML();
+      const stockItemExtraData = await this.tallyPostService.postTallyXML(
+        stockItemExtraXml,
+      );
+
+      try {
+        const parsedXmlData =
+          await this.tallyPostService.parseExtraStockXmlToObjects(
+            stockItemExtraData,
+          );
+        return parsedXmlData;
+
+        // Return success response
+        return {
+          success: true,
+          message: 'Sync successful',
+        };
+      } catch (err) {
+        console.log(err);
         throw new Error(
           'Error synchronizing products. Transaction rolled back.',
         );

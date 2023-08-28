@@ -15,11 +15,13 @@ import {
   AuthenticationComponent,
   registerAuthenticationStrategy,
 } from '@loopback/authentication';
+import {CronComponent} from '@loopback/cron';
 import {JWTStrategy} from './authentication-strategy/jwt-strategy';
 import {MyUserService} from './services/user-service';
 import {TallyHttpCallService} from './services/tally-http-call';
 import {EmailManagerBindings} from './keys';
 import {EmailService} from './services/email.service';
+import {SyncProductCron} from './services/cronjob.service';
 
 export {ApplicationConfig};
 
@@ -36,6 +38,7 @@ export class AryabackendApplication extends BootMixin(
     this.setUpBinding();
 
     this.component(AuthenticationComponent);
+    this.component(CronComponent);
     registerAuthenticationStrategy(this, JWTStrategy);
 
     // Set up default home page
@@ -65,5 +68,6 @@ export class AryabackendApplication extends BootMixin(
     this.bind('service.user.service').toClass(MyUserService);
     this.bind('service.tally.service').toClass(TallyHttpCallService);
     this.bind(EmailManagerBindings.SEND_MAIL).toClass(EmailService);
+    this.bind('service.cronjob.service').toClass(SyncProductCron);
   }
 }

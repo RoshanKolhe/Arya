@@ -47,11 +47,52 @@ export class Product extends Entity {
   })
   uom: string;
 
-  // @property({
-  //   type: 'string',
-  //   required: true,
-  // })
-  // _uom: string;
+  @property({
+    type: 'string',
+    required: true,
+  })
+  cgst: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  sgstOrUtgst: string;
+  @property({
+    type: 'string',
+    required: true,
+  })
+  igst: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  cess: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  stateCess: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  retailerMargin: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  distributorMargin: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  batchName: string;
 
   @property({
     type: 'number',
