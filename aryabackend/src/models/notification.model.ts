@@ -26,6 +26,13 @@ export class Notification extends Entity {
   type?: string;
 
   @property({
+    type: 'boolean',
+    default: false,
+    required: true,
+  })
+  isRead: boolean;
+
+  @property({
     type: 'date',
   })
   createdAt?: Date;

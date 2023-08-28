@@ -39,11 +39,6 @@ const TABS = [
     label: 'Unread',
     count: 12,
   },
-  {
-    value: 'archived',
-    label: 'Archived',
-    count: 10,
-  },
 ];
 
 // ----------------------------------------------------------------------
@@ -105,11 +100,7 @@ export default function NotificationsPopover() {
           icon={
             <Label
               variant={((tab.value === 'all' || tab.value === currentTab) && 'filled') || 'soft'}
-              color={
-                (tab.value === 'unread' && 'info') ||
-                (tab.value === 'archived' && 'success') ||
-                'default'
-              }
+              color={(tab.value === 'unread' && 'info') || 'default'}
             >
               {tab.count}
             </Label>

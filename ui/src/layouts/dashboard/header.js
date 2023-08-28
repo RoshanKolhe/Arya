@@ -136,11 +136,12 @@ export default function Header({ onOpenNav }) {
       >
         {/* <LanguagePopover />
 
-        <NotificationsPopover />
 
         <ContactsPopover /> */}
 
         {RenderTallyStatus}
+        <NotificationsPopover />
+
         <SettingsButton />
 
         <AccountPopover />
