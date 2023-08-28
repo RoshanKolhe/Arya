@@ -7,3 +7,4 @@ export * from './ledger.controller';
 export * from './voucher.controller';
 export * from './voucher-user.controller';
 export * from './product-unit-of-measure.controller';
+export * from './notification.controller';
