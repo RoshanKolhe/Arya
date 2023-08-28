@@ -46,8 +46,8 @@ import ProductTableToolbar from '../product-table-toolbar';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Product' },
-  { id: 'price', label: 'Price', width: 160 },
+  { id: 'name', label: 'Product Name' },
+  { id: 'batchName', label: 'Batch', width: 160 },
   // { id: 'opening_rate', label: 'Rate', width: 140 },
   // { id: 'opening_value', label: 'Value', width: 110 },
 ];

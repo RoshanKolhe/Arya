@@ -10,7 +10,7 @@ export class SyncProductCron extends CronJob {
       },
     });
   }
- 
+
   runJob() {
     console.log('Cron job is running at', new Date());
   }
