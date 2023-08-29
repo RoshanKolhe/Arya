@@ -69,7 +69,7 @@ export default function NotificationItem({ notification }) {
     />
   );
 
-  const renderUnReadBadge = notification.isUnRead && (
+  const renderUnReadBadge = !notification.isRead && (
     <Box
       sx={{
         top: 26,
@@ -205,15 +205,15 @@ export default function NotificationItem({ notification }) {
     >
       {renderUnReadBadge}
 
-      {renderAvatar}
+      {/* {renderAvatar} */}
 
       <Stack sx={{ flexGrow: 1 }}>
         {renderText}
-        {notification.type === 'friend' && friendAction}
+        {/* {notification.type === 'friend' && friendAction}
         {notification.type === 'project' && projectAction}
         {notification.type === 'file' && fileAction}
         {notification.type === 'tags' && tagsAction}
-        {notification.type === 'payment' && paymentAction}
+        {notification.type === 'payment' && paymentAction} */}
       </Stack>
     </ListItemButton>
   );

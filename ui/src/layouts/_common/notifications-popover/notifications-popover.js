@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -24,20 +24,21 @@ import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { varHover } from 'src/components/animate';
 //
+import axiosInstance from 'src/utils/axios';
 import NotificationItem from './notification-item';
 
 // ----------------------------------------------------------------------
 
-const TABS = [
+const tabsData = [
   {
     value: 'all',
     label: 'All',
-    count: 22,
+    count: 0,
   },
   {
     value: 'unread',
     label: 'Unread',
-    count: 12,
+    count: 0,
   },
 ];
 
@@ -49,22 +50,19 @@ export default function NotificationsPopover() {
   const smUp = useResponsive('up', 'sm');
 
   const [currentTab, setCurrentTab] = useState('all');
+  const [TABS, setTABS] = useState(tabsData);
 
   const handleChangeTab = useCallback((event, newValue) => {
     setCurrentTab(newValue);
   }, []);
 
-  const [notifications, setNotifications] = useState(_notifications);
-
-  const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
+  const [notifications, setNotifications] = useState([]);
+  const [totalUnRead, setTotalUnRead] = useState(0);
 
   const handleMarkAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        isUnRead: false,
-      }))
-    );
+    axiosInstance.patch('/notifications', { isRead: true }).then((res) => {
+      getNotifications();
+    });
   };
 
   const renderHead = (
@@ -125,6 +123,32 @@ export default function NotificationsPopover() {
     </Scrollbar>
   );
 
+  const getNotifications = () => {
+    axiosInstance.get('/notifications?filter[order]=createdAt%20DESC').then((res) => {
+      const { data } = res;
+      setNotifications(data);
+      console.log(data);
+      const unreadCount = data.filter((item) => item.isRead === false).length;
+      setTotalUnRead(unreadCount);
+      setTABS((prevData) => {
+        const newData = [...prevData];
+        newData[0] = {
+          ...newData[0],
+          count: data.length,
+        };
+        newData[1] = {
+          ...newData[1],
+          count: unreadCount,
+        };
+        return newData;
+      });
+    });
+  };
+
+  useEffect(() => {
+    getNotifications();
+  }, []);
+
   return (
     <>
       <IconButton
@@ -162,20 +186,20 @@ export default function NotificationsPopover() {
           sx={{ pl: 2.5, pr: 1 }}
         >
           {renderTabs}
-          <IconButton onClick={handleMarkAllAsRead}>
+          {/* <IconButton onClick={handleMarkAllAsRead}>
             <Iconify icon="solar:settings-bold-duotone" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
 
         <Divider />
 
         {renderList}
 
-        <Box sx={{ p: 1 }}>
+        {/* <Box sx={{ p: 1 }}>
           <Button fullWidth size="large">
             View All
           </Button>
-        </Box>
+        </Box> */}
       </Drawer>
     </>
   );
