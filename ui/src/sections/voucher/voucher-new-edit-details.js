@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import sum from 'lodash/sum';
 import { useCallback, useEffect } from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
@@ -17,8 +18,9 @@ import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 
 // components
 import Iconify from 'src/components/iconify';
-import { RHFAutocomplete, RHFTextField } from 'src/components/hook-form';
+import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import { useGetProducts } from 'src/api/product';
+import { TextField } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -31,6 +33,8 @@ export default function VoucherNewEditDetails() {
     name: 'items',
   });
 
+  console.log(fields);
+
   const values = watch();
 
   const totalOnRow = values.items.map((item) => item.quantity * item.rate);
@@ -38,9 +42,8 @@ export default function VoucherNewEditDetails() {
   const subTotal = sum(totalOnRow);
 
   const totalAmount = values.items.reduce((acc, item) => acc + item.total, 0);
-  console.log(values);
+
   useEffect(() => {
-    console.log('here');
     setValue('totalAmount', totalAmount);
   }, [setValue, totalAmount]);
 
@@ -49,7 +52,7 @@ export default function VoucherNewEditDetails() {
       productName: '',
       notes: '',
       quantity: 1,
-      rate: 0,
+      rate: '0',
       discount: 0,
       total: 0,
     });
@@ -61,22 +64,35 @@ export default function VoucherNewEditDetails() {
 
   const handleChangeQuantity = useCallback(
     (event, index) => {
-      setValue(`items[${index}].quantity`, Number(event.target.value));
-      setValue(
-        `items[${index}].total`,
-        values.items.map((item) => item.quantity * item.rate)[index]
-      );
+      setValue(`items[${index}].quantity`, event.target.value);
+      const item = values.items[index];
+      const newTotal = item.quantity * item.rate;
+
+      // Calculate the discounted total based on the new discount
+      const discountAmount = (item.discount / 100) * newTotal;
+      const discountedTotal = newTotal - discountAmount;
+      setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
     },
     [setValue, values.items]
   );
 
   const handleChangePrice = useCallback(
     (event, index) => {
-      setValue(`items[${index}].rate`, Number(event.target.value));
-      setValue(
-        `items[${index}].total`,
-        values.items.map((item) => item.quantity * item.rate)[index]
-      );
+      if (!event || event.target.value === '' || event.target.value === null) {
+        setValue(`items[${index}].rate`, '0');
+      } else {
+        const newValue = Number(event.target.value);
+        if (!isNaN(newValue)) {
+          setValue(`items[${index}].rate`, `${newValue}`);
+          const item = values.items[index];
+          const newTotal = item.quantity * item.rate;
+
+          // Calculate the discounted total based on the new discount
+          const discountAmount = (item.discount / 100) * newTotal;
+          const discountedTotal = newTotal - discountAmount;
+          setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
+        }
+      }
     },
     [setValue, values.items]
   );
@@ -84,13 +100,11 @@ export default function VoucherNewEditDetails() {
   const handleChangeDiscount = useCallback(
     (event, index) => {
       const newDiscount = parseFloat(event.target.value) || 0;
-      console.log(newDiscount);
       setValue(`items[${index}].discount`, newDiscount);
-
       const item = values.items[index];
+
       const newTotal = item.quantity * item.rate;
 
-      // Calculate the discounted total based on the new discount
       const discountAmount = (newDiscount / 100) * newTotal;
       const discountedTotal = newTotal - discountAmount;
       setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
@@ -159,124 +173,141 @@ export default function VoucherNewEditDetails() {
       </Typography>
 
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
-        {fields.map((item, index) => (
-          <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
-              <RHFAutocomplete
-                name={`items[${index}].productName`}
-                label="Name"
+        {fields.map((item, index) => {
+          const selectedItem = products.find((product) => product.guid === item.productGuid);
+          const batchArray = selectedItem ? selectedItem.batchName.split(',') : [];
+
+          return (
+            <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
+                <RHFAutocomplete
+                  name={`items[${index}].productName`}
+                  label="Name"
+                  size="small"
+                  fullWidth
+                  options={products ? products.map((product) => product.name) : []}
+                  getOptionLabel={(option) => option}
+                  renderOption={(props, option) => {
+                    const { name, id, guid } = products.filter(
+                      (product) => product.name === option
+                    )[0];
+
+                    if (!name) {
+                      return null;
+                    }
+
+                    return (
+                      <li {...props} key={id}>
+                        {name}
+                      </li>
+                    );
+                  }}
+                />
+
+                <RHFTextField
+                  size="small"
+                  type="text"
+                  name={`items[${index}].notes`}
+                  label="Note"
+                  placeholder="Note..."
+                  onChange={(event) => handleChangeNote(event, index)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ maxWidth: { md: 300 } }}
+                />
+
+                <RHFAutocomplete
+                  name={`items[${index}].rate`}
+                  label="Price"
+                  size="small"
+                  freeSolo
+                  onInputChange={(event) => handleChangePrice(event, index)}
+                  options={batchArray ? batchArray.map((batch) => batch) : []}
+                  getOptionLabel={(option) => `${option}`}
+                  sx={{ maxWidth: { md: 96 } }}
+                  renderInput={(params) => <TextField {...params} label="Price" />}
+                />
+
+                {/* <RHFTextField
+                  size="small"
+                  type="number"
+                  name={`items[${index}].rate`}
+                  label="Price"
+                  placeholder="0.00"
+                  onChange={(event) => handleChangePrice(event, index)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>₹</Box>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ maxWidth: { md: 96 } }}
+                /> */}
+
+                <RHFTextField
+                  size="small"
+                  type="number"
+                  name={`items[${index}].quantity`}
+                  label="Pcs"
+                  placeholder="0"
+                  onChange={(event) => handleChangeQuantity(event, index)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ maxWidth: { md: 96 } }}
+                />
+
+                <RHFTextField
+                  size="small"
+                  type="number"
+                  name={`items[${index}].discount`}
+                  label="Discount"
+                  placeholder="0.00"
+                  onChange={(event) => handleChangeDiscount(event, index)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>%</Box>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ maxWidth: { md: 96 } }}
+                />
+
+                <RHFTextField
+                  disabled
+                  size="small"
+                  type="number"
+                  name={`items[${index}].total`}
+                  label="Total"
+                  placeholder="0.00"
+                  value={values.items[index].total === 0 ? '' : values.items[index].total}
+                  onChange={(event) => handleChangePrice(event, index)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>₹</Box>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    maxWidth: { md: 104 },
+                    [`& .${inputBaseClasses.input}`]: {
+                      textAlign: { md: 'right' },
+                    },
+                  }}
+                />
+              </Stack>
+
+              <Button
                 size="small"
-                fullWidth
-                options={products ? products.map((product) => product.name) : []}
-                getOptionLabel={(option) => option}
-                renderOption={(props, option) => {
-                  const { name, id, guid } = products.filter(
-                    (product) => product.name === option
-                  )[0];
-
-                  if (!name) {
-                    return null;
-                  }
-
-                  return (
-                    <li {...props} key={id}>
-                      {name}
-                    </li>
-                  );
-                }}
-              />
-
-              <RHFTextField
-                size="small"
-                type="text"
-                name={`items[${index}].notes`}
-                label="Note"
-                placeholder="Note..."
-                onChange={(event) => handleChangeNote(event, index)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ maxWidth: { md: 300 } }}
-              />
-
-              <RHFTextField
-                size="small"
-                type="number"
-                name={`items[${index}].rate`}
-                label="Price"
-                placeholder="0.00"
-                onChange={(event) => handleChangePrice(event, index)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>₹</Box>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ maxWidth: { md: 96 } }}
-              />
-
-              <RHFTextField
-                size="small"
-                type="number"
-                name={`items[${index}].quantity`}
-                label="Pcs"
-                placeholder="0"
-                onChange={(event) => handleChangeQuantity(event, index)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ maxWidth: { md: 96 } }}
-              />
-
-              <RHFTextField
-                size="small"
-                type="number"
-                name={`items[${index}].discount`}
-                label="Discount"
-                placeholder="0.00"
-                onChange={(event) => handleChangeDiscount(event, index)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>%</Box>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ maxWidth: { md: 96 } }}
-              />
-
-              <RHFTextField
-                disabled
-                size="small"
-                type="number"
-                name={`items[${index}].total`}
-                label="Total"
-                placeholder="0.00"
-                value={values.items[index].total === 0 ? '' : values.items[index].total}
-                onChange={(event) => handleChangePrice(event, index)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ typography: 'subtitle2', color: 'text.disabled' }}>₹</Box>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  maxWidth: { md: 104 },
-                  [`& .${inputBaseClasses.input}`]: {
-                    textAlign: { md: 'right' },
-                  },
-                }}
-              />
+                color="error"
+                startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+                onClick={() => handleRemove(index)}
+              >
+                Remove
+              </Button>
             </Stack>
-
-            <Button
-              size="small"
-              color="error"
-              startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
-              onClick={() => handleRemove(index)}
-            >
-              Remove
-            </Button>
-          </Stack>
-        ))}
+          );
+        })}
       </Stack>
 
       <Divider sx={{ my: 3, borderStyle: 'dashed' }} />

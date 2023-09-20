@@ -79,8 +79,6 @@ export default function VoucherNewEditForm({ currentVoucher }) {
   } = methods;
   const handleCreateAndSend = handleSubmit(async (data) => {
     loadingSend.onTrue();
-    console.log(data);
-    console.log(data.createdAt);
     const date = new Date(data.createdAt);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -91,6 +89,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
       ...data,
       date: formattedDate,
     };
+    
     try {
       await axiosInstance
         .post(`/api/voucher/update`, updatedVoucherData)

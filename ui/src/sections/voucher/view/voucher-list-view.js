@@ -309,11 +309,11 @@ export default function VoucherListView() {
                       <Iconify icon="ic:outline-sync" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Delete">
+                  {/* <Tooltip title="Delete">
                     <IconButton color="primary" onClick={confirm.onTrue}>
                       <Iconify icon="solar:trash-bin-trash-bold" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </>
               }
             />

@@ -11,7 +11,7 @@ export class Product extends Entity {
   })
   guid: string;
 
-  @property({
+  @property({ 
     type: 'string',
     required: true,
     default: '',

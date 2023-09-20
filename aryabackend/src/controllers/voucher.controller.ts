@@ -144,6 +144,8 @@ export class VoucherController {
         },
       );
       const voucherPostXml = SYNC_VOUCHERS_DATA_XML(voucher);
+      console.log(voucherPostXml);
+      return;
       const result: any = await this.tallyPostService.postTallyXML(
         voucherPostXml,
       );

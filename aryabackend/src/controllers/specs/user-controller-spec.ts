@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {SchemaObject} from '@loopback/rest';
 
 const CredentialsSchema: SchemaObject = {

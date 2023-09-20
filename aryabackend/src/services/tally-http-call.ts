@@ -252,12 +252,15 @@ export class TallyHttpCallService {
               ]['STATEWISEDETAILS.LIST'];
             const batchDetails =
               filteredData[i].STOCKITEM[0]['BATCHALLOCATIONS.LIST'];
-            const mainLocationBatchObject =
-              batchDetails && batchDetails.length === 2
-                ? batchDetails.filter(
-                    (item: any) => item.GODOWNNAME[0] === 'Main Location',
-                  )
-                : null;
+            // console.log(typeof batchDetails[0]);
+            const processedData = this.processBatchDetails(batchDetails);
+            // console.log(processedData);
+            // const mainLocationBatchObject =
+            //   batchDetails && batchDetails.length === 2
+            //     ? batchDetails.filter(
+            //         (item: any) => item.GODOWNNAME[0] === 'Main Location',
+            //       )
+            //     : null;
 
             const retailerMargin = filteredData[i].STOCKITEM[0][
               'UDF:_UDF_671088731.LIST'
@@ -299,9 +302,7 @@ export class TallyHttpCallService {
               distributorMargin: distributorMargin
                 ? distributorMargin.trim()
                 : '0',
-              batchName: mainLocationBatchObject
-                ? mainLocationBatchObject[0].BATCHNAME[0]
-                : 0,
+              batchName: processedData || 0,
             };
             productArray.push(productExtra);
           }
@@ -309,5 +310,24 @@ export class TallyHttpCallService {
         }
       });
     });
+  }
+
+  processBatchDetails(batchDetails: any) {
+    const finalBatchStringArray: any = [];
+    if (typeof batchDetails[0] !== 'string') {
+      const batchArray = batchDetails.filter(
+        (item: any) => item.GODOWNNAME[0] === 'Main Location',
+      );
+      if (batchArray.length > 0) {
+        batchArray.forEach((element: any) => {
+          console.log(element);
+          console.log('here');
+          finalBatchStringArray.push(element.BATCHNAME[0]);
+        });
+      }
+    }
+    return finalBatchStringArray.toString().length > 0
+      ? finalBatchStringArray.toString()
+      : '';
   }
 }

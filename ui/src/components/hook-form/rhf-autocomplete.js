@@ -1,12 +1,19 @@
 import PropTypes from 'prop-types';
-import { useFormContext, Controller } from 'react-hook-form';
+import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
 // @mui
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 
 // ----------------------------------------------------------------------
 
-export default function RHFAutocomplete({ name, label, placeholder, helperText, ...other }) {
+export default function RHFAutocomplete({
+  name,
+  label,
+  placeholder,
+  helperText,
+  isProductChanged,
+  ...other
+}) {
   const { control, setValue } = useFormContext();
 
   return (
@@ -40,4 +47,5 @@ RHFAutocomplete.propTypes = {
   label: PropTypes.string,
   name: PropTypes.string,
   placeholder: PropTypes.string,
+  isProductChanged: PropTypes.bool,
 };
