@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
+import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
-import {TallyHttpCallService} from '../services/tally-http-call';
-import {UserProfile} from '@loopback/security';
-import {
-  LedgerRepository,
-  ProductRepository,
-  VoucherProductRepository,
-  VoucherRepository,
-} from '../repositories';
 import {
   DefaultTransactionalRepository,
   Filter,
@@ -16,14 +9,21 @@ import {
   IsolationLevel,
   repository,
 } from '@loopback/repository';
-import {AryaDataSource} from '../datasources';
-import {AuthenticationBindings, authenticate} from '@loopback/authentication';
+import {HttpErrors, get, param, post, requestBody} from '@loopback/rest';
+import {UserProfile} from '@loopback/security';
 import {PermissionKeys} from '../authorization/permission-keys';
-import {HttpErrors, post, get, requestBody, param} from '@loopback/rest';
-import {Voucher} from '../models';
-import {ALL_VOUCHERS_DATA} from '../helpers/getAllVouchers';
+import {AryaDataSource} from '../datasources';
 import {ACTIVE_COMPANY_TALLY_XML} from '../helpers/getActiveCompanyTallyXml';
+import {ALL_VOUCHERS_DATA} from '../helpers/getAllVouchers';
 import {SYNC_VOUCHERS_DATA_XML} from '../helpers/syncVoucehrWithTallyXml';
+import {Voucher} from '../models';
+import {
+  LedgerRepository,
+  ProductRepository,
+  VoucherProductRepository,
+  VoucherRepository,
+} from '../repositories';
+import {TallyHttpCallService} from '../services/tally-http-call';
 
 export class VoucherController {
   constructor(
@@ -382,6 +382,9 @@ export class VoucherController {
               },
             },
           },
+          {
+            relation: 'ledger',
+          },
         ],
         ...filter,
       });
@@ -502,7 +505,9 @@ export class VoucherController {
     filter?: FilterExcludingWhere<Voucher>,
   ): Promise<any> {
     try {
-      const voucher = await this.voucherRepository.findById(id);
+      const voucher = await this.voucherRepository.findById(id, {
+        include: ['ledger'],
+      });
 
       const voucherProducts = await this.voucherProductRepository.find({
         where: {

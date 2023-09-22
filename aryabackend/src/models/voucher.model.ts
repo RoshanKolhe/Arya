@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import {Entity, model, property, belongsTo} from '@loopback/repository';
 import {User} from './user.model';
+import {Ledger} from './ledger.model';
 
 @model()
 export class Voucher extends Entity {
@@ -65,11 +66,11 @@ export class Voucher extends Entity {
   })
   party_name: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  _party_name: string;
+  // @property({
+  //   type: 'string',
+  //   required: true,
+  // })
+  // _party_name: string;
 
   @property({
     type: 'string',
@@ -107,6 +108,8 @@ export class Voucher extends Entity {
   })
   totalAmount: number;
 
+  @belongsTo(() => Ledger, {name: 'ledger'})
+  _party_name: string;
   @property({
     type: 'number',
     required: true,

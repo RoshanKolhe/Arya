@@ -1,3 +1,5 @@
+import {authenticate} from '@loopback/authentication';
+import {inject} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -9,24 +11,22 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {PermissionKeys} from '../authorization/permission-keys';
+import {AryaDataSource} from '../datasources';
+import {FETCH_LEDGER_ACCOUNTS_XML} from '../helpers/getSalesLedgerAccounts';
 import {Ledger} from '../models';
 import {LedgerRepository} from '../repositories';
-import {FETCH_LEDGER_ACCOUNTS_XML} from '../helpers/getSalesLedgerAccounts';
 import {TallyHttpCallService} from '../services/tally-http-call';
-import {inject} from '@loopback/core';
-import {AryaDataSource} from '../datasources';
-import {authenticate} from '@loopback/authentication';
-import {PermissionKeys} from '../authorization/permission-keys';
 
 export class LedgerController {
   constructor(
@@ -53,7 +53,7 @@ export class LedgerController {
         'application/json': {
           schema: getModelSchemaRef(Ledger, {
             title: 'NewLedger',
-            exclude: ['id'],
+            exclude: ['guid'],
           }),
         },
       },
@@ -183,7 +183,7 @@ export class LedgerController {
     },
   })
   async findById(
-    @param.path.number('id') id: number,
+    @param.path.number('id') id: string,
     @param.filter(Ledger, {exclude: 'where'})
     filter?: FilterExcludingWhere<Ledger>,
   ): Promise<Ledger> {
@@ -199,7 +199,7 @@ export class LedgerController {
     description: 'Ledger PATCH success',
   })
   async updateById(
-    @param.path.number('id') id: number,
+    @param.path.number('id') id: string,
     @requestBody({
       content: {
         'application/json': {
@@ -221,7 +221,7 @@ export class LedgerController {
     description: 'Ledger PUT success',
   })
   async replaceById(
-    @param.path.number('id') id: number,
+    @param.path.number('id') id: string,
     @requestBody() ledger: Ledger,
   ): Promise<void> {
     await this.ledgerRepository.replaceById(id, ledger);
@@ -235,7 +235,7 @@ export class LedgerController {
   @response(204, {
     description: 'Ledger DELETE success',
   })
-  async deleteById(@param.path.number('id') id: number): Promise<void> {
+  async deleteById(@param.path.number('id') id: string): Promise<void> {
     await this.ledgerRepository.deleteById(id);
   }
 }

@@ -4,11 +4,11 @@ import {Entity, model, property} from '@loopback/repository';
 @model()
 export class Ledger extends Entity {
   @property({
-    type: 'number',
+    type: 'string',
+    required: true,
     id: true,
-    generated: true,
   })
-  id?: number;
+  guid: string;
 
   @property({
     type: 'string',
@@ -16,11 +16,11 @@ export class Ledger extends Entity {
   })
   name: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  guid: string;
+  // @property({
+  //   type: 'string',
+  //   required: true,
+  // })
+  // guid: string;
 
   @property({
     type: 'number',
@@ -31,7 +31,6 @@ export class Ledger extends Entity {
     scale: 2,
   })
   opening_balance?: number;
-
 
   constructor(data?: Partial<Ledger>) {
     super(data);

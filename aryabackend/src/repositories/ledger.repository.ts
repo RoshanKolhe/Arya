@@ -5,12 +5,10 @@ import {Ledger, LedgerRelations} from '../models';
 
 export class LedgerRepository extends DefaultCrudRepository<
   Ledger,
-  typeof Ledger.prototype.id,
+  typeof Ledger.prototype.guid,
   LedgerRelations
 > {
-  constructor(
-    @inject('datasources.arya') dataSource: AryaDataSource,
-  ) {
+  constructor(@inject('datasources.arya') dataSource: AryaDataSource) {
     super(Ledger, dataSource);
   }
 }
