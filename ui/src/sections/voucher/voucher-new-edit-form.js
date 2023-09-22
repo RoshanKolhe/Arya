@@ -1,30 +1,34 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import PropTypes from 'prop-types';
 import { useEffect, useMemo } from 'react';
-import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 // routes
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
 // _mock
-import { _addressBooks } from 'src/_mock';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
 import FormProvider from 'src/components/hook-form';
 //
-import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'notistack';
+import { useGetLedgers } from 'src/api/ledger';
 import VoucherNewEditDetails from './voucher-new-edit-details';
 import VoucherNewEditStatusDate from './voucher-new-edit-status-date';
 
 // ----------------------------------------------------------------------
 
 export default function VoucherNewEditForm({ currentVoucher }) {
+  const { ledgers, ledgersLoading, ledgersEmpty, refreshLedgers } = useGetLedgers();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const defaultSelectedOption = ledgers.find(
+    (option) => option.guid === currentVoucher?._party_name
+  );
   const router = useRouter();
 
   const loadingSave = useBoolean();
@@ -43,7 +47,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
   });
   const defaultValues = useMemo(
     () => ({
-      party_name: currentVoucher?.guid || '',
+      _party_name: currentVoucher?.ledger,
       voucherNumber: currentVoucher?.id || 'INV-1990',
       createdAt: currentVoucher?.createdAt || new Date(),
       taxes: currentVoucher?.taxes || 0,
@@ -66,6 +70,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
     }),
     [currentVoucher]
   );
+  console.log('🚀 ~  defaultValues:', defaultValues);
 
   const methods = useForm({
     resolver: yupResolver(NewInvoiceSchema),
@@ -88,32 +93,34 @@ export default function VoucherNewEditForm({ currentVoucher }) {
     const updatedVoucherData = {
       ...data,
       date: formattedDate,
+      party_name: data._party_name.guid,
     };
-    
-    try {
-      await axiosInstance
-        .post(`/api/voucher/update`, updatedVoucherData)
-        .then((res) => {
-          if (res.data.success) {
-            reset();
-            enqueueSnackbar('Update success!');
-            router.push(paths.dashboard.voucher.root);
-          } else {
-            enqueueSnackbar('something went wrong!', { variant: 'error' });
-          }
-        })
-        .catch((err) => {
-          enqueueSnackbar(
-            err.response.data.error.message
-              ? err.response.data.error.message
-              : 'something went wrong!',
-            { variant: 'error' }
-          );
-        });
-    } catch (error) {
-      console.error(error);
-      loadingSend.onFalse();
-    }
+    // console.log('🚀 ~  updatedVoucherData:', updatedVoucherData);
+
+    // try {
+    //   await axiosInstance
+    //     .post(`/api/voucher/update`, updatedVoucherData)
+    //     .then((res) => {
+    //       if (res.data.success) {
+    //         reset();
+    //         enqueueSnackbar('Update success!');
+    //         router.push(paths.dashboard.voucher.root);
+    //       } else {
+    //         enqueueSnackbar('something went wrong!', { variant: 'error' });
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       enqueueSnackbar(
+    //         err.response.data.error.message
+    //           ? err.response.data.error.message
+    //           : 'something went wrong!',
+    //         { variant: 'error' }
+    //       );
+    //     });
+    // } catch (error) {
+    //   console.error(error);
+    //   loadingSend.onFalse();
+    // }
   });
 
   useEffect(() => {

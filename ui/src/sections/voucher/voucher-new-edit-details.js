@@ -1,26 +1,24 @@
 /* eslint-disable no-restricted-globals */
 import sum from 'lodash/sum';
 import { useCallback, useEffect } from 'react';
-import { useFormContext, useFieldArray } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 // @mui
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import { inputBaseClasses } from '@mui/material/InputBase';
 import InputAdornment from '@mui/material/InputAdornment';
+import { inputBaseClasses } from '@mui/material/InputBase';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 // utils
 import { fCurrency } from 'src/utils/format-number';
 // _mock
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 
 // components
-import Iconify from 'src/components/iconify';
-import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
-import { useGetProducts } from 'src/api/product';
 import { TextField } from '@mui/material';
+import { useGetProducts } from 'src/api/product';
+import { RHFAutocomplete, RHFTextField } from 'src/components/hook-form';
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -33,7 +31,7 @@ export default function VoucherNewEditDetails() {
     name: 'items',
   });
 
-  console.log(fields);
+  // console.log(fields);
 
   const values = watch();
 

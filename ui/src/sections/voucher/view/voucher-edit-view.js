@@ -1,14 +1,13 @@
 // @mui
 import Container from '@mui/material/Container';
 // routes
-import { paths } from 'src/routes/paths';
 import { useParams } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 // api
-import { useGetProduct } from 'src/api/product';
 // components
-import { useSettingsContext } from 'src/components/settings';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import { useGetVoucher } from 'src/api/voucher';
+import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import { useSettingsContext } from 'src/components/settings';
 import VoucherNewEditForm from '../voucher-new-edit-form';
 //
 
@@ -39,8 +38,7 @@ export default function VoucherEditView() {
           mb: { xs: 3, md: 5 },
         }}
       />
-
-      <VoucherNewEditForm currentVoucher={currentVoucher} />
+      {currentVoucher ? <VoucherNewEditForm currentVoucher={currentVoucher} /> : null}
     </Container>
   );
 }

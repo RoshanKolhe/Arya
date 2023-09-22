@@ -1,13 +1,11 @@
 import { Controller, useFormContext } from 'react-hook-form';
 // @mui
-import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // components
 import { useGetLedgers } from 'src/api/ledger';
-import { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -15,7 +13,7 @@ export default function VoucherNewEditStatusDate() {
   const { control, watch } = useFormContext();
 
   const { ledgers, ledgersLoading, ledgersEmpty, refreshLedgers } = useGetLedgers();
-
+  // console.log('🚀 ~ ledgers:', ledgers);
   const values = watch();
   return (
     <Stack
@@ -30,7 +28,7 @@ export default function VoucherNewEditStatusDate() {
         value={values.voucherNumber}
       />
 
-      <RHFSelect
+      {/* <RHFSelect
         fullWidth
         name="party_name"
         label="Party A/c Name"
@@ -42,30 +40,16 @@ export default function VoucherNewEditStatusDate() {
             {option.name}
           </MenuItem>
         ))}
-      </RHFSelect>
-
-      {/* <Autocomplete
-        // name={`items[${index}].productName`}
+      </RHFSelect> */}
+      <RHFAutocomplete
+        name="_party_name"
         label="Party A/c Name"
         fullWidth
-        name={values.party_name}
-        options={ledgers ? ledgers.map((option) => option.name) : []}
-        // getOptionLabel={(option) => option}
-        renderInput={(params) => <TextField {...params} label="Party A/c Name" />}
-        // renderOption={(props, option) => {
-        //   const { name, id, guid } = ledgers.filter((ledger) => ledger.name === option)[0];
-
-        //   if (!name) {
-        //     return null;
-        //   }
-
-        //   return (
-        //     <li {...props} key={id}>
-        //       {name}
-        //     </li>
-        //   );
-        // }}
-      /> */}
+        multiple={false} // Set to false for a single selection
+        options={ledgers}
+        getOptionLabel={(option) => option.name}
+        renderOption={(props, option) => <li {...props}>{option.name}</li>}
+      />
 
       <RHFSelect
         fullWidth
