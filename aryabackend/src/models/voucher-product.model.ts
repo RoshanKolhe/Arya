@@ -32,6 +32,46 @@ export class VoucherProduct extends Entity {
     precision: 30,
     scale: 2,
   })
+  retailerMargin: number;
+
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  sgstOrUtgst: number;
+
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  cgst: number;
+
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  cess: number;
+
+  @property({
+    type: 'number',
+    required: true,
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
   rate: number;
 
   @property({
