@@ -327,9 +327,13 @@ export class VoucherController {
           return {
             voucherId: voucher.id,
             productId: productData?.guid,
+            cess: productData?.cess,
+            cgst: productData?.cgst,
+            sgstOrUtgst: productData?.sgstOrUtgst,
+            retailerMargin: productData?.retailerMargin,
             quantity: product.quantity,
             rate: product.rate,
-            amount: product.rate * product.quantity, // Calculate the total amount for each product
+            amount: product.total, // Calculate the total amount for each product
             discount: product.discount || 0,
             godown: 'Main Location',
             _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
@@ -525,6 +529,10 @@ export class VoucherController {
 
           return {
             productName: productData?.name,
+            cess: voucherProduct?.cess,
+            cgst: voucherProduct?.cgst,
+            sgstOrUtgst: voucherProduct?.sgstOrUtgst,
+            retailerMargin: voucherProduct?.retailerMargin,
             productGuid: voucherProduct?.productId,
             quantity: voucherProduct?.quantity,
             rate: voucherProduct?.rate,

@@ -17,6 +17,8 @@ import FormProvider from 'src/components/hook-form';
 //
 import { useSnackbar } from 'notistack';
 import { useGetLedgers } from 'src/api/ledger';
+import { paths } from 'src/routes/paths';
+import axiosInstance from 'src/utils/axios';
 import VoucherNewEditDetails from './voucher-new-edit-details';
 import VoucherNewEditStatusDate from './voucher-new-edit-status-date';
 
@@ -56,6 +58,10 @@ export default function VoucherNewEditForm({ currentVoucher }) {
       discount: currentVoucher?.discount || 0,
       items: currentVoucher?.products || [
         {
+          cgst: '',
+          sgstOrUtgst: '',
+          cess: '',
+          retailerMargin: '',
           productName: '',
           notes: '',
           description: '',
@@ -95,32 +101,32 @@ export default function VoucherNewEditForm({ currentVoucher }) {
       date: formattedDate,
       party_name: data._party_name.guid,
     };
-    // console.log('🚀 ~  updatedVoucherData:', updatedVoucherData);
+    console.log('🚀 ~  updatedVoucherData:', updatedVoucherData);
 
-    // try {
-    //   await axiosInstance
-    //     .post(`/api/voucher/update`, updatedVoucherData)
-    //     .then((res) => {
-    //       if (res.data.success) {
-    //         reset();
-    //         enqueueSnackbar('Update success!');
-    //         router.push(paths.dashboard.voucher.root);
-    //       } else {
-    //         enqueueSnackbar('something went wrong!', { variant: 'error' });
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       enqueueSnackbar(
-    //         err.response.data.error.message
-    //           ? err.response.data.error.message
-    //           : 'something went wrong!',
-    //         { variant: 'error' }
-    //       );
-    //     });
-    // } catch (error) {
-    //   console.error(error);
-    //   loadingSend.onFalse();
-    // }
+    try {
+      await axiosInstance
+        .post(`/api/voucher/update`, updatedVoucherData)
+        .then((res) => {
+          if (res.data.success) {
+            reset();
+            enqueueSnackbar('Update success!');
+            router.push(paths.dashboard.voucher.root);
+          } else {
+            enqueueSnackbar('something went wrong!', { variant: 'error' });
+          }
+        })
+        .catch((err) => {
+          enqueueSnackbar(
+            err.response.data.error.message
+              ? err.response.data.error.message
+              : 'something went wrong!',
+            { variant: 'error' }
+          );
+        });
+    } catch (error) {
+      console.error(error);
+      loadingSend.onFalse();
+    }
   });
 
   useEffect(() => {
@@ -145,7 +151,20 @@ export default function VoucherNewEditForm({ currentVoucher }) {
         shipping: shipping || 0,
         status: is_synced || 0,
         discount: discount || 0,
-        items: products || [{ name: '', notes: '', quantity: 1, rate: 0, discount: 0, total: 0 }],
+        items: products || [
+          {
+            cess: '',
+            cgst: '',
+            sgstOrUtgst: '',
+            retailerMargin: '',
+            name: '',
+            notes: '',
+            quantity: 1,
+            rate: 0,
+            discount: 0,
+            total: 0,
+          },
+        ],
         totalAmount: totalAmount || 0,
       };
       // Set the form values using the setValue method from react-hook-form
