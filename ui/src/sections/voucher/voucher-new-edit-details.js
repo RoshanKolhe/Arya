@@ -16,7 +16,7 @@ import { fCurrency } from 'src/utils/format-number';
 // components
 import { TextField } from '@mui/material';
 import { useGetProducts } from 'src/api/product';
-import { RHFAutocomplete, RHFTextField } from 'src/components/hook-form';
+import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -152,8 +152,6 @@ export default function VoucherNewEditDetails() {
           const discountedTotal = newTotal - discountAmount;
           setValue(`items[${index}].total`, discountedTotal.toFixed(2));
         }
-      } else {
-        setValue(`items[${index}].rate`, '69');
       }
     },
     [setValue, values.items]
@@ -197,14 +195,16 @@ export default function VoucherNewEditDetails() {
     const selectedProductData = products.find(
       (product) => product.name === event?.target?.textContent
     );
-    console.log('🚀 ~ selectedProductData:', selectedProductData);
-    setValue(`items[${index}].productGuid`, selectedProductData?.guid);
-    // setValue(`items[${index}].cess`, selectedProductData?.cess);
-    // setValue(`items[${index}].cgst`, selectedProductData?.cgst);
-    // setValue(`items[${index}].sgstOrUtgst`, selectedProductData?.sgstOrUtgst);
-    // setValue(`items[${index}].retailerMargin`, selectedProductData?.retailerMargin);
-    // Update the selectedProduct state with the selected product data
-    console.log('🚀 ~ values updated:', values);
+    if (event !== undefined && event) {
+      console.log('🚀 ~ selectedProductData:', selectedProductData);
+      setValue(`items[${index}].productGuid`, selectedProductData?.guid);
+      setValue(`items[${index}].cess`, selectedProductData?.cess);
+      setValue(`items[${index}].cgst`, selectedProductData?.cgst);
+      setValue(`items[${index}].sgstOrUtgst`, selectedProductData?.sgstOrUtgst);
+      setValue(`items[${index}].retailerMargin`, selectedProductData?.retailerMargin);
+      // Update the selectedProduct state with the selected product data
+      console.log('🚀 ~ values updated:', values);
+    }
   };
   const renderTotal = (
     <Stack
@@ -265,7 +265,9 @@ export default function VoucherNewEditDetails() {
 
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
         {fields.map((item, index) => {
-          const selectedItem = products.find((product) => product.guid === item.productGuid);
+          const selectedItem = products.find(
+            (product) => product.guid === values.items[index]?.productGuid
+          );
           const batchArray = selectedItem ? selectedItem.batchName.split(',') : [];
 
           return (
@@ -289,7 +291,7 @@ export default function VoucherNewEditDetails() {
                     }
 
                     return (
-                      <li {...props} key={id}>
+                      <li {...props} key={guid}>
                         {name}
                       </li>
                     );
