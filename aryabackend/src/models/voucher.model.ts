@@ -100,6 +100,42 @@ export class Voucher extends Entity {
 
   @property({
     type: 'number',
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  cgst?: number;
+
+  @property({
+    type: 'number',
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  sgst?: number;
+
+  @property({
+    type: 'number',
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  cess?: number;
+
+  @property({
+    type: 'number',
+    default: 0,
+    dataType: 'decimal',
+    precision: 30,
+    scale: 2,
+  })
+  roundOff?: number;
+
+  @property({
+    type: 'number',
     required: true,
     default: 0,
     dataType: 'decimal',
@@ -110,6 +146,7 @@ export class Voucher extends Entity {
 
   @belongsTo(() => Ledger, {name: 'ledger'})
   _party_name: string;
+
   @property({
     type: 'number',
     required: true,

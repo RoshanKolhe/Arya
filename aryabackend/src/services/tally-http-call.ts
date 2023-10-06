@@ -320,8 +320,6 @@ export class TallyHttpCallService {
       );
       if (batchArray.length > 0) {
         batchArray.forEach((element: any) => {
-          console.log(element);
-          console.log('here');
           finalBatchStringArray.push(element.BATCHNAME[0]);
         });
       }

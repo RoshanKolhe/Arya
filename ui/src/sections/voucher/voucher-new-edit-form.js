@@ -17,6 +17,8 @@ import FormProvider from 'src/components/hook-form';
 //
 import { useSnackbar } from 'notistack';
 import { useGetLedgers } from 'src/api/ledger';
+import axiosInstance from 'src/utils/axios';
+import { paths } from 'src/routes/paths';
 import VoucherNewEditDetails from './voucher-new-edit-details';
 import VoucherNewEditStatusDate from './voucher-new-edit-status-date';
 
@@ -56,7 +58,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
       discount: currentVoucher?.discount || 0,
       items: currentVoucher?.products || [
         {
-          productName: '',
+          productName: null,
           notes: '',
           description: '',
           service: '',
@@ -70,7 +72,6 @@ export default function VoucherNewEditForm({ currentVoucher }) {
     }),
     [currentVoucher]
   );
-  console.log('🚀 ~  defaultValues:', defaultValues);
 
   const methods = useForm({
     resolver: yupResolver(NewInvoiceSchema),
@@ -95,32 +96,32 @@ export default function VoucherNewEditForm({ currentVoucher }) {
       date: formattedDate,
       party_name: data._party_name.guid,
     };
-    // console.log('🚀 ~  updatedVoucherData:', updatedVoucherData);
+    console.log('updatedVoucherData:', updatedVoucherData);
 
-    // try {
-    //   await axiosInstance
-    //     .post(`/api/voucher/update`, updatedVoucherData)
-    //     .then((res) => {
-    //       if (res.data.success) {
-    //         reset();
-    //         enqueueSnackbar('Update success!');
-    //         router.push(paths.dashboard.voucher.root);
-    //       } else {
-    //         enqueueSnackbar('something went wrong!', { variant: 'error' });
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       enqueueSnackbar(
-    //         err.response.data.error.message
-    //           ? err.response.data.error.message
-    //           : 'something went wrong!',
-    //         { variant: 'error' }
-    //       );
-    //     });
-    // } catch (error) {
-    //   console.error(error);
-    //   loadingSend.onFalse();
-    // }
+    try {
+      await axiosInstance
+        .post(`/api/voucher/update`, updatedVoucherData)
+        .then((res) => {
+          if (res.data.success) {
+            reset();
+            enqueueSnackbar('Update success!');
+            router.push(paths.dashboard.voucher.root);
+          } else {
+            enqueueSnackbar('something went wrong!', { variant: 'error' });
+          }
+        })
+        .catch((err) => {
+          enqueueSnackbar(
+            err.response.data.error.message
+              ? err.response.data.error.message
+              : 'something went wrong!',
+            { variant: 'error' }
+          );
+        });
+    } catch (error) {
+      console.error(error);
+      loadingSend.onFalse();
+    }
   });
 
   useEffect(() => {
@@ -160,7 +161,7 @@ export default function VoucherNewEditForm({ currentVoucher }) {
       <Card>
         <VoucherNewEditStatusDate />
 
-        <VoucherNewEditDetails />
+        <VoucherNewEditDetails defaultValues={defaultValues} />
       </Card>
       {currentVoucher && currentVoucher.is_synced === 0 ? (
         <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
@@ -169,7 +170,6 @@ export default function VoucherNewEditForm({ currentVoucher }) {
             variant="contained"
             loading={loadingSend.value && isSubmitting}
             onClick={() => {
-              console.log('here');
               handleCreateAndSend();
             }}
           >

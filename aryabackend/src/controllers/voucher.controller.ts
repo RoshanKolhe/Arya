@@ -210,6 +210,67 @@ export class VoucherController {
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       const day = String(currentDate.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
+      let totalAmount = 0;
+      let cgstAmount: any = 0;
+      let sgstAmount: any = 0;
+      let cessAmount: any = 0;
+      let totalQuantity = 0;
+      const voucherProducts = await Promise.all(
+        voucher.products.map(async (product: any) => {
+          const productDetails: any = await this.productRepository.findOne({
+            where: {
+              guid: product.guid,
+            },
+          });
+          const totalTax =
+            (Number(productDetails.cgst) +
+              Number(productDetails.sgstOrUtgst) +
+              Number(productDetails.cess)) /
+            100;
+
+          const totalRetailerMargin =
+            Number(productDetails.retailerMargin) / 100;
+
+          const productTotal =
+            (Number(product.rate) * Number(product.quantity)) /
+            (1 + totalRetailerMargin) /
+            (1 + totalTax);
+
+          const discountedTotal: any = (
+            productTotal -
+            productTotal * (product.discount / 100)
+          ).toFixed(2);
+          cgstAmount += (discountedTotal * Number(productDetails.cgst)) / 100;
+          sgstAmount +=
+            (discountedTotal * Number(productDetails.sgstOrUtgst)) / 100;
+          cessAmount += (discountedTotal * Number(productDetails.cess)) / 100;
+          totalAmount += Number(discountedTotal);
+          totalQuantity += product.quantity;
+
+          return {
+            productId: product.productGuid,
+            quantity: product.quantity,
+            rate: product.rate,
+            amount: discountedTotal,
+            discount: product.discount,
+            godown: 'Main Location',
+            _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
+            notes: product.notes,
+          };
+        }),
+      );
+      const allTax: any = (cgstAmount + sgstAmount + cessAmount).toFixed(2);
+      console.log('allTax', allTax);
+      console.log(totalAmount);
+      const totalValue = totalAmount + parseFloat(allTax);
+      console.log('totalValue', totalValue);
+      const roundedValue = Math.round(totalValue);
+      console.log('roundedValue', roundedValue);
+      const roundValue: any = totalValue - roundedValue;
+      console.log(
+        'roundValue',
+        roundValue.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0],
+      );
 
       const voucherCreateData = {
         date: formattedDate,
@@ -223,11 +284,14 @@ export class VoucherController {
         is_inventory_voucher: false,
         is_order_voucher: false,
         is_synced: 0,
-        totalAmount: voucher.totalPrice,
-        totalQuantity: voucher.totalQuantity,
+        totalAmount: roundedValue,
+        cgst: cgstAmount.toFixed(2),
+        sgst: sgstAmount.toFixed(2),
+        cess: cessAmount.toFixed(2),
+        roundOff: roundValue.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0],
+        totalQuantity: totalQuantity,
         userId: currnetUser.id,
       };
-
       const newVoucher = await this.voucherRepository.create(
         voucherCreateData,
         {
@@ -235,22 +299,18 @@ export class VoucherController {
         },
       );
 
-      const voucherProducts = voucher.products.map((product: any) => {
+      const voucherProductsWithAmounts = voucherProducts.map((product: any) => {
         return {
+          ...product,
           voucherId: newVoucher.id,
-          productId: product.productGuid,
-          quantity: product.quantity,
-          rate: product.rate,
-          amount: parseInt(product.quantity) * parseFloat(product.rate),
-          discount: product.discount,
-          godown: 'Main Location',
-          _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
-          notes: product.notes,
         };
       });
-      await this.voucherProductRepository.createAll(voucherProducts, {
-        transaction: tx,
-      });
+      await this.voucherProductRepository.createAll(
+        voucherProductsWithAmounts,
+        {
+          transaction: tx,
+        },
+      );
       await tx.commit();
       return newVoucher;
     } catch (error) {
@@ -289,13 +349,61 @@ export class VoucherController {
         throw new HttpErrors.UnprocessableEntity('Party not found');
       }
 
-      let totalAmountData = 0;
-      let totalQuantityData = 0;
+      let totalAmount = 0;
+      let cgstAmount: any = 0;
+      let sgstAmount: any = 0;
+      let cessAmount: any = 0;
+      let totalQuantity = 0;
+      const voucherProducts = await Promise.all(
+        voucherData.items.map(async (product: any) => {
+          const productDetails: any = await this.productRepository.findOne({
+            where: {
+              guid: product.productName.guid,
+            },
+          });
+          const totalTax =
+            (Number(productDetails.cgst) +
+              Number(productDetails.sgstOrUtgst) +
+              Number(productDetails.cess)) /
+            100;
 
-      for (const item of voucherData.items) {
-        totalQuantityData += item.quantity;
-        totalAmountData += item.quantity * item.rate;
-      }
+          const totalRetailerMargin =
+            Number(productDetails.retailerMargin) / 100;
+
+          const productTotal =
+            (Number(product.rate) * Number(product.quantity)) /
+            (1 + totalRetailerMargin) /
+            (1 + totalTax);
+
+          const discountedTotal: any = (
+            productTotal -
+            productTotal * (product.discount / 100)
+          ).toFixed(2);
+          cgstAmount += (discountedTotal * Number(productDetails.cgst)) / 100;
+          sgstAmount +=
+            (discountedTotal * Number(productDetails.sgstOrUtgst)) / 100;
+          cessAmount += (discountedTotal * Number(productDetails.cess)) / 100;
+          totalAmount += Number(discountedTotal);
+          totalQuantity += product.quantity;
+
+          return {
+            voucherId: voucherData.voucherNumber,
+            productId: product.productName.guid,
+            quantity: product.quantity,
+            rate: product.rate,
+            amount: discountedTotal,
+            discount: product.discount,
+            godown: 'Main Location',
+            _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
+            notes: product.notes,
+          };
+        }),
+      );
+      const allTax: any = (cgstAmount + sgstAmount + cessAmount).toFixed(2);
+      const totalValue = totalAmount + parseFloat(allTax);
+
+      const roundedValue = Math.round(totalValue);
+      const roundValue = (totalValue - roundedValue).toFixed(2);
 
       const voucherUpdateData = {
         date: voucherData.date,
@@ -309,34 +417,17 @@ export class VoucherController {
         is_inventory_voucher: false,
         is_order_voucher: false,
         is_synced: 0,
-        totalAmount: totalAmountData,
-        totalQuantity: totalQuantityData,
+        totalAmount: roundedValue,
+        cgst: cgstAmount.toFixed(2),
+        sgst: sgstAmount.toFixed(2),
+        cess: cessAmount.toFixed(2),
+        roundOff: parseFloat(roundValue),
+        totalQuantity: totalQuantity,
       };
 
       await this.voucherRepository.updateById(voucher.id, voucherUpdateData, {
         transaction: tx,
       });
-
-      const voucherProducts: any[] = await Promise.all(
-        voucherData.items.map(async (product: any) => {
-          const productData = await this.productRepository.findOne({
-            where: {name: product.productName},
-          });
-          console.log(product.productName);
-          console.log(productData);
-          return {
-            voucherId: voucher.id,
-            productId: productData?.guid,
-            quantity: product.quantity,
-            rate: product.rate,
-            amount: product.rate * product.quantity, // Calculate the total amount for each product
-            discount: product.discount || 0,
-            godown: 'Main Location',
-            _godown: 'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000003a',
-            notes: product.notes,
-          };
-        }),
-      );
 
       await this.voucherProductRepository.deleteAll(
         {
@@ -524,7 +615,7 @@ export class VoucherController {
           });
 
           return {
-            productName: productData?.name,
+            productName: productData,
             productGuid: voucherProduct?.productId,
             quantity: voucherProduct?.quantity,
             rate: voucherProduct?.rate,

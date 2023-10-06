@@ -1,6 +1,7 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-restricted-globals */
 import sum from 'lodash/sum';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 // @mui
 import Box from '@mui/material/Box';
@@ -22,32 +23,69 @@ import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export default function VoucherNewEditDetails() {
+export default function VoucherNewEditDetails({ defaultValues }) {
   const { control, setValue, watch, resetField } = useFormContext();
-
+  const [totalAmount, setTotalAmount] = useState(defaultValues.totalAmount);
+  const [totalCgst, setTotalCgst] = useState(0);
+  const [totalSgst, setTotalSgst] = useState(0);
+  const [totalRoundValue, setTotalRoundValue] = useState(0);
+  const [totalCess, setTotalCess] = useState(0);
   const { products, productsLoading, productsEmpty } = useGetProducts();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'items',
   });
 
-  // console.log(fields);
-
   const values = watch();
 
-  const totalOnRow = values.items.map((item) => item.quantity * item.rate);
+  // const totalOnRow = values.items.map((item) => item.quantity * item.rate);
 
-  const subTotal = sum(totalOnRow);
+  // const subTotal = sum(totalOnRow);
 
-  const totalAmount = values.items.reduce((acc, item) => acc + item.total, 0);
+  // const totalAmount = values.items.reduce((acc, item) => acc + item.total, 0);
 
   useEffect(() => {
-    setValue('totalAmount', totalAmount);
-  }, [setValue, totalAmount]);
+    let calTotal = 0;
+    let cgstAmount = 0;
+    let sgstAmount = 0;
+    let cessAmount = 0;
+
+    values.items.forEach((item) => {
+      const total = parseFloat(item.total);
+      const cgstRate = parseFloat(item?.productName?.cgst || 0);
+      const sgstRate = parseFloat(item?.productName?.sgstOrUtgst || 0);
+      const cessRate = parseFloat(item?.productName?.cess || 0);
+
+      calTotal += total;
+      cgstAmount += (total * cgstRate) / 100;
+      sgstAmount += (total * sgstRate) / 100;
+      cessAmount += (total * cessRate) / 100;
+    });
+    setTotalCgst(cgstAmount.toFixed(2));
+    setTotalSgst(sgstAmount.toFixed(2));
+    setTotalCess(cessAmount.toFixed(2));
+    const totalTax = (cgstAmount + sgstAmount + cessAmount).toFixed(2);
+    const totalValue = calTotal + parseFloat(totalTax);
+    console.log(totalValue);
+    const roundedValue = Math.round(totalValue);
+    const difference = totalValue - roundedValue;
+    console.log(
+      roundedValue,
+      Math.floor(totalValue * 100) / 100
+    );
+    // Determine whether to display a "+" or "-" sign
+    const sign = totalValue >= roundedValue ? '-' : '+';
+
+    // Set the roundedValue including the sign
+    setTotalRoundValue(`${sign}${Math.abs(difference.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0])}`);
+    setTotalAmount(roundedValue);
+  }, [values]);
+
+  console.log(totalRoundValue);
 
   const handleAdd = () => {
     append({
-      productName: '',
+      productName: null,
       notes: '',
       quantity: 1,
       rate: '0',
@@ -64,12 +102,26 @@ export default function VoucherNewEditDetails() {
     (event, index) => {
       setValue(`items[${index}].quantity`, event.target.value);
       const item = values.items[index];
-      const newTotal = item.quantity * item.rate;
+      const totalTax =
+        (Number(item.productName.cgst) +
+          Number(item.productName.sgstOrUtgst) +
+          Number(item.productName.cess)) /
+        100;
 
-      // Calculate the discounted total based on the new discount
-      const discountAmount = (item.discount / 100) * newTotal;
-      const discountedTotal = newTotal - discountAmount;
-      setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
+      const totalRetailerMargin = Number(item.productName.retailerMargin) / 100;
+
+      const productTotal =
+        (Number(item.rate) * Number(item.quantity)) / (1 + totalRetailerMargin) / (1 + totalTax);
+
+      const discountedTotal = (productTotal - productTotal * (item.discount / 100)).toFixed(2);
+      // const cgst = totalCgst + (discountedTotal * Number(item.productName.cgst)) / 100;
+      // const sgst = totalSgst + (discountedTotal * Number(item.productName.sgstOrUtgst)) / 100;
+      // const cess = totalCess + (discountedTotal * Number(item.productName.cess)) / 100;
+
+      // setTotalCgst(cgst.toFixed(2));
+      // setTotalSgst(sgst.toFixed(2));
+      // setTotalCess(cess.toFixed(2));
+      setValue(`items[${index}].total`, discountedTotal);
     },
     [setValue, values.items]
   );
@@ -83,29 +135,61 @@ export default function VoucherNewEditDetails() {
         if (!isNaN(newValue)) {
           setValue(`items[${index}].rate`, `${newValue}`);
           const item = values.items[index];
-          const newTotal = item.quantity * item.rate;
+          console.log(item);
+          const totalTax =
+            (Number(item.productName.cgst) +
+              Number(item.productName.sgstOrUtgst) +
+              Number(item.productName.cess)) /
+            100;
 
-          // Calculate the discounted total based on the new discount
-          const discountAmount = (item.discount / 100) * newTotal;
-          const discountedTotal = newTotal - discountAmount;
-          setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
+          const totalRetailerMargin = Number(item.productName.retailerMargin) / 100;
+
+          const productTotal =
+            (Number(item.rate) * Number(item.quantity)) /
+            (1 + totalRetailerMargin) /
+            (1 + totalTax);
+
+          const discountedTotal = (productTotal - productTotal * (item.discount / 100)).toFixed(2);
+          // const cgst = totalCgst + (discountedTotal * Number(item.productName.cgst)) / 100;
+          // const sgst = totalSgst + (discountedTotal * Number(item.productName.sgstOrUtgst)) / 100;
+          // const cess = totalCess + (discountedTotal * Number(item.productName.cess)) / 100;
+
+          // setTotalCgst(cgst.toFixed(2));
+          // setTotalSgst(sgst.toFixed(2));
+          // setTotalCess(cess.toFixed(2));
+
+          setValue(`items[${index}].total`, discountedTotal);
         }
       }
     },
     [setValue, values.items]
   );
-
   const handleChangeDiscount = useCallback(
     (event, index) => {
       const newDiscount = parseFloat(event.target.value) || 0;
       setValue(`items[${index}].discount`, newDiscount);
       const item = values.items[index];
 
-      const newTotal = item.quantity * item.rate;
+      const totalTax =
+        (Number(item.productName.cgst) +
+          Number(item.productName.sgstOrUtgst) +
+          Number(item.productName.cess)) /
+        100;
 
-      const discountAmount = (newDiscount / 100) * newTotal;
-      const discountedTotal = newTotal - discountAmount;
-      setValue(`items[${index}].total`, parseInt(discountedTotal.toFixed(2), 10));
+      const totalRetailerMargin = Number(item.productName.retailerMargin) / 100;
+
+      const productTotal =
+        (Number(item.rate) * Number(item.quantity)) / (1 + totalRetailerMargin) / (1 + totalTax);
+
+      const discountedTotal = (productTotal - productTotal * (item.discount / 100)).toFixed(2);
+      // const cgst = totalCgst + (discountedTotal * Number(item.productName.cgst)) / 100;
+      // const sgst = totalSgst + (discountedTotal * Number(item.productName.sgstOrUtgst)) / 100;
+      // const cess = totalCess + (discountedTotal * Number(item.productName.cess)) / 100;
+
+      // setTotalCgst(cgst.toFixed(2));
+      // setTotalSgst(sgst.toFixed(2));
+      // setTotalCess(cess.toFixed(2));
+      setValue(`items[${index}].total`, discountedTotal);
     },
     [setValue, values.items]
   );
@@ -123,43 +207,25 @@ export default function VoucherNewEditDetails() {
       alignItems="flex-end"
       sx={{ mt: 3, textAlign: 'right', typography: 'body2' }}
     >
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Subtotal</Box>
-        <Box sx={{ width: 160, typography: 'subtitle2' }}>{fCurrency(subTotal) || '-'}</Box>
-      </Stack> */}
-
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Shipping</Box>
-        <Box
-          sx={{
-            width: 160,
-            ...(values.shipping && { color: 'error.main' }),
-          }}
-        >
-          {values.shipping ? `- ${fCurrency(values.shipping)}` : '-'}
-        </Box>
-      </Stack> */}
-
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Discount</Box>
-        <Box
-          sx={{
-            width: 160,
-            ...(values.discount && { color: 'error.main' }),
-          }}
-        >
-          {values.discount ? `- ${fCurrency(values.discount)}` : '-'}
-        </Box>
-      </Stack> */}
-
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Taxes</Box>
-        <Box sx={{ width: 160 }}>{values.taxes ? fCurrency(values.taxes) : '-'}</Box>
-      </Stack> */}
-
+      <Stack direction="row">
+        <Box sx={{ color: 'text.secondary' }}>CGST</Box>
+        <Box sx={{ width: 160 }}>{totalCgst || '-'}</Box>
+      </Stack>
+      <Stack direction="row">
+        <Box sx={{ color: 'text.secondary' }}>SGST</Box>
+        <Box sx={{ width: 160 }}>{totalSgst || '-'}</Box>
+      </Stack>
+      <Stack direction="row">
+        <Box sx={{ color: 'text.secondary' }}>CESS</Box>
+        <Box sx={{ width: 160 }}>{totalCess || '-'}</Box>
+      </Stack>
+      <Stack direction="row">
+        <Box sx={{ color: 'text.secondary' }}>Round Off</Box>
+        <Box sx={{ width: 160 }}>{totalRoundValue || '-'}</Box>
+      </Stack>
       <Stack direction="row" sx={{ typography: 'subtitle1' }}>
         <Box>Total</Box>
-        <Box sx={{ width: 160 }}>{fCurrency(totalAmount) || '-'}</Box>
+        <Box sx={{ width: 160 }}>{totalAmount || '-'}</Box>
       </Stack>
     </Stack>
   );
@@ -171,9 +237,12 @@ export default function VoucherNewEditDetails() {
       </Typography>
 
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
-        {fields.map((item, index) => {
-          const selectedItem = products.find((product) => product.guid === item.productGuid);
-          const batchArray = selectedItem ? selectedItem.batchName.split(',') : [];
+        {values.items.map((item, index) => {
+          const selectedItem = item?.productName
+            ? products.find((product) => product.guid === item.productName.guid)
+            : null;
+
+          const batchArray = selectedItem ? selectedItem.batchName.split(',') : ['0'];
 
           return (
             <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
@@ -183,12 +252,13 @@ export default function VoucherNewEditDetails() {
                   label="Name"
                   size="small"
                   fullWidth
-                  options={products ? products.map((product) => product.name) : []}
-                  getOptionLabel={(option) => option}
+                  options={products}
+                  // onBlur={(event) => {
+                  //   console.log('inside blurr', event);
+                  // }}
+                  getOptionLabel={(option) => `${option.name}`}
                   renderOption={(props, option) => {
-                    const { name, id, guid } = products.filter(
-                      (product) => product.name === option
-                    )[0];
+                    const { name, id } = products.filter((pin) => pin.guid === option.guid)[0];
 
                     if (!name) {
                       return null;
@@ -218,7 +288,7 @@ export default function VoucherNewEditDetails() {
                   label="Price"
                   size="small"
                   freeSolo
-                  onInputChange={(event) => handleChangePrice(event, index)}
+                  onBlur={(event) => handleChangePrice(event, index)}
                   options={batchArray ? batchArray.map((batch) => batch) : []}
                   getOptionLabel={(option) => `${option}`}
                   sx={{ maxWidth: { md: 96 } }}

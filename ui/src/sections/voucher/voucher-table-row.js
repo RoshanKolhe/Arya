@@ -45,7 +45,7 @@ export default function VoucherTableRow({
     totalQuantity,
     totalAmount,
   } = row;
-
+  console.log('voucherProducts', products);
   const confirm = useBoolean();
 
   const collapse = useBoolean();
@@ -171,6 +171,7 @@ export default function VoucherTableRow({
                 <Box sx={{ width: 110, textAlign: 'right' }}>x{item.quantity}</Box>
 
                 <Box sx={{ width: 110, textAlign: 'right' }}>{fCurrency(item.rate)}</Box>
+                <Box sx={{ width: 110, textAlign: 'right' }}>{fCurrency(item.total)}</Box>
               </Stack>
             ))}
           </Stack>

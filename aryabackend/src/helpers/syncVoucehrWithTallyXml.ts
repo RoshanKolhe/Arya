@@ -1,4 +1,5 @@
 export const SYNC_VOUCHERS_DATA_XML = (voucherData: any) => {
+  console.log(voucherData);
   return `<ENVELOPE>
       <HEADER>
           <VERSION>1</VERSION>
@@ -12,6 +13,7 @@ export const SYNC_VOUCHERS_DATA_XML = (voucherData: any) => {
               <TALLYMESSAGE>
                   <VOUCHER>
                       <DATE>${convertDateFormat(voucherData.date)}</DATE>
+                      <PRICELEVEL>PRICE LIST</PRICELEVEL>
                       <VOUCHERTYPENAME>Sales</VOUCHERTYPENAME>
                       <PERSISTEDVIEW>Invoice Voucher View</PERSISTEDVIEW>
                       <ISINVOICE>Yes</ISINVOICE>
@@ -24,6 +26,44 @@ export const SYNC_VOUCHERS_DATA_XML = (voucherData: any) => {
                           <AMOUNT>-${voucherData.totalAmount}</AMOUNT>
                       </LEDGERENTRIES.LIST>
                       ${getVoucherItems(voucherData.products).join('')}
+                      <LEDGERENTRIES.LIST>
+                      <LEDGERNAME>CGST</LEDGERNAME>
+                      <METHODTYPE>GST</METHODTYPE>
+                      <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+                      <AMOUNT>${voucherData.cgst}</AMOUNT>
+                  </LEDGERENTRIES.LIST>
+                  <LEDGERENTRIES.LIST>
+                      <ROUNDTYPE/>
+                      <LEDGERNAME>SGST</LEDGERNAME>
+                      <METHODTYPE>GST</METHODTYPE>
+                      <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+                      <AMOUNT>${voucherData.sgst}</AMOUNT>
+                  </LEDGERENTRIES.LIST>
+                  <LEDGERENTRIES.LIST>
+                      <LEDGERNAME>Cess</LEDGERNAME>
+                      <METHODTYPE>GST</METHODTYPE>
+                      <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+                      <AMOUNT>${voucherData.cess}</AMOUNT>
+                  </LEDGERENTRIES.LIST>
+                  <LEDGERENTRIES.LIST>
+                  <OLDAUDITENTRYIDS.LIST TYPE="Number">
+                   <OLDAUDITENTRYIDS>-1</OLDAUDITENTRYIDS>
+                  </OLDAUDITENTRYIDS.LIST>
+                  <ROUNDTYPE>Normal Rounding</ROUNDTYPE>
+                  <LEDGERNAME>Round Off</LEDGERNAME>
+                  <METHODTYPE>As Total Amount Rounding</METHODTYPE>
+                  <GSTCLASS/>
+                  <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+                  <LEDGERFROMITEM>No</LEDGERFROMITEM>
+                  <REMOVEZEROENTRIES>No</REMOVEZEROENTRIES>
+                  <ISPARTYLEDGER>No</ISPARTYLEDGER>
+                  <ISLASTDEEMEDPOSITIVE>No</ISLASTDEEMEDPOSITIVE>
+                  <ISCAPVATTAXALTERED>No</ISCAPVATTAXALTERED>
+                  <ISCAPVATNOTCLAIMED>No</ISCAPVATNOTCLAIMED>
+                  <ROUNDLIMIT> 1</ROUNDLIMIT>
+                  <AMOUNT>0.49</AMOUNT>
+                  <VATEXPAMOUNT>0.49</VATEXPAMOUNT>
+                 </LEDGERENTRIES.LIST>
                   </VOUCHER>
               </TALLYMESSAGE>
           </DATA>
@@ -37,22 +77,32 @@ function getVoucherItems(items: any) {
     return `<ALLINVENTORYENTRIES.LIST>
                          <STOCKITEMNAME>${item.productName}</STOCKITEMNAME>
                          <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
-                         <RATE>${item.rate}</RATE>
+                         <RATE>${item.total}/Pcs</RATE>
                          <AMOUNT>${item.total}</AMOUNT>
-                         <ACTUALQTY>${item.quantity}</ACTUALQTY>
-                         <BILLEDQTY>${item.quantity}</BILLEDQTY>
+                         <ACTUALQTY>0 Box ${item.quantity} Pcs</ACTUALQTY>
+                         <BILLEDQTY>0 Box ${item.quantity} Pcs</BILLEDQTY>
                          <BATCHALLOCATIONS.LIST>
                              <GODOWNNAME>Main Location</GODOWNNAME>
-                             <BATCHNAME>145</BATCHNAME>
+                             <BATCHNAME>${item.rate}</BATCHNAME>
                              <AMOUNT>${item.total}</AMOUNT>
-                             <ACTUALQTY>${item.quantity}</ACTUALQTY>
-                             <BILLEDQTY>${item.quantity}</BILLEDQTY>
+                             <ACTUALQTY>0 Box ${item.quantity} Pcs</ACTUALQTY>
+                             <BILLEDQTY>0 Box ${item.quantity} Pcs</BILLEDQTY>
                          </BATCHALLOCATIONS.LIST>
                          <ACCOUNTINGALLOCATIONS.LIST>
+                         <OLDAUDITENTRYIDS.LIST TYPE="Number">
+                                <OLDAUDITENTRYIDS>-1</OLDAUDITENTRYIDS>
+                            </OLDAUDITENTRYIDS.LIST>
                              <LEDGERNAME>Aarya Sales GST</LEDGERNAME>
+                            <CLASSRATE>100.00000</CLASSRATE>
                              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
                              <AMOUNT>${item.total}</AMOUNT>
                          </ACCOUNTINGALLOCATIONS.LIST>
+                         <UDF:NOSQTY.LIST DESC="\`NosQty\`" ISLIST="YES" TYPE="Number" INDEX="901">
+                            <UDF:NOSQTY DESC="\`NosQty\`"> ${item.quantity}</UDF:NOSQTY>
+                        </UDF:NOSQTY.LIST>
+                        <UDF:ITEMLED.LIST DESC="\`ItemLed\`" ISLIST="YES" TYPE="String" INDEX="909">
+                            <UDF:ITEMLED DESC="\`ItemLed\`">Aarya Sales GST</UDF:ITEMLED>
+                        </UDF:ITEMLED.LIST>
                      </ALLINVENTORYENTRIES.LIST>`;
   });
 
