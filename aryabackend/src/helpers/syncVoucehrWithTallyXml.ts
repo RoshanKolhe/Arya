@@ -61,8 +61,8 @@ export const SYNC_VOUCHERS_DATA_XML = (voucherData: any) => {
                   <ISCAPVATTAXALTERED>No</ISCAPVATTAXALTERED>
                   <ISCAPVATNOTCLAIMED>No</ISCAPVATNOTCLAIMED>
                   <ROUNDLIMIT> 1</ROUNDLIMIT>
-                  <AMOUNT>0.49</AMOUNT>
-                  <VATEXPAMOUNT>0.49</VATEXPAMOUNT>
+                  <AMOUNT>${-(parseFloat(voucherData.roundOff))}</AMOUNT>
+                  <VATEXPAMOUNT>${-(parseFloat(voucherData.roundOff))}</VATEXPAMOUNT>
                  </LEDGERENTRIES.LIST>
                   </VOUCHER>
               </TALLYMESSAGE>

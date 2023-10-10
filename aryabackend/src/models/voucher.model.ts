@@ -126,13 +126,9 @@ export class Voucher extends Entity {
   cess?: number;
 
   @property({
-    type: 'number',
-    default: 0,
-    dataType: 'decimal',
-    precision: 30,
-    scale: 2,
+    type: 'string',
   })
-  roundOff?: number;
+  roundOff?: string;
 
   @property({
     type: 'number',

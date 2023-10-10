@@ -144,8 +144,7 @@ export class VoucherController {
         },
       );
       const voucherPostXml = SYNC_VOUCHERS_DATA_XML(voucher);
-      console.log(voucherPostXml);
-      return;
+
       const result: any = await this.tallyPostService.postTallyXML(
         voucherPostXml,
       );
@@ -403,8 +402,8 @@ export class VoucherController {
       const totalValue = totalAmount + parseFloat(allTax);
 
       const roundedValue = Math.round(totalValue);
-      const roundValue = (totalValue - roundedValue).toFixed(2);
-
+      const roundValue: any = totalValue - roundedValue;
+      console.log(roundValue);
       const voucherUpdateData = {
         date: voucherData.date,
         voucher_type: 'Sales',
@@ -421,7 +420,7 @@ export class VoucherController {
         cgst: cgstAmount.toFixed(2),
         sgst: sgstAmount.toFixed(2),
         cess: cessAmount.toFixed(2),
-        roundOff: parseFloat(roundValue),
+        roundOff: roundValue.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0],
         totalQuantity: totalQuantity,
       };
 
@@ -445,11 +444,11 @@ export class VoucherController {
 
       return await Promise.resolve({
         success: true,
-        message: 'Voucher products synced successfully',
+        message: 'Voucher products updated successfully',
       });
     } catch (error) {
       await tx.rollback();
-      console.log('Error creating voucher:', error);
+      console.log('Error updating voucher:', error);
       throw new HttpErrors.InternalServerError('Failed to update voucher');
     }
   }
