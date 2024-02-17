@@ -58,6 +58,7 @@ export class Product extends Entity {
     required: true,
   })
   sgstOrUtgst: string;
+  
   @property({
     type: 'string',
     required: true,

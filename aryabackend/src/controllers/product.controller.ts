@@ -264,12 +264,32 @@ export class ProductController {
   async find(
     @param.filter(Product) filter?: Filter<Product>,
   ): Promise<Product[]> {
+    const requiredParents = [
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00006017',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000072f',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00004f24',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000607',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000374c',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000601',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000c96',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-0000748c',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00004ddd',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000609',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-000061ba',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-000060ce',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00000606',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-00006236',
+      'e5a9b5a7-7f09-4ac0-a2cd-f5aa3ad03acf-000074d5',
+    ];
     return this.productRepository.find({
       include: [
         {
           relation: 'unitOfMeasure',
         },
       ],
+      where: {
+        _parent: {inq: requiredParents},
+      },
       ...filter,
     });
   }
